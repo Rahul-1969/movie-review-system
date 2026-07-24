@@ -9,7 +9,10 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "worker": "node queues/workers/emailWorker.js",
-    "import-movies": "node scripts/importMovies.js"
+    "import-movies": "node scripts/importMovies.js",
+    "import-regional": "node scripts/importRegional.js",
+    "import-series": "node scripts/importSeries.js",
+    "fix-posters": "node scripts/fixPosters.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

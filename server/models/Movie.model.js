@@ -68,6 +68,11 @@ const movieSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },
+    contentType: {
+      type: String,
+      enum: ['movie', 'series'],
+      default: 'movie',
+    },
   },
   { timestamps: true }
 );
@@ -75,6 +80,7 @@ const movieSchema = new mongoose.Schema(
 // ─── Text index for title search ──────────────────────────────────────────────
 movieSchema.index({ averageRating: -1 });
 movieSchema.index({ createdAt: -1 });
+movieSchema.index({ contentType: 1 });
 movieSchema.index(
   { title: 'text', description: 'text', director: 'text' },
   { language_override: 'lang_override' }
