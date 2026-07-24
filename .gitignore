@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Environment Variables (Never commit secrets)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+server/.env
+client/.env
+
+# Build Output
+dist/
+build/
+client/dist/
+server/dist/
+
+# Coverage Reports
+coverage/
+
+# Cache Files
+.cache/
+.parcel-cache/
+
+# Runtime Uploads
+# (Ignore locally uploaded files)
+uploads/
+
+# Log Files
+logs/
+*.log
+npm-debug.log*
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# IDE / Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
