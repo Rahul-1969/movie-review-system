@@ -38,9 +38,9 @@ export default function MovieDetail() {
   const { title, description, poster, trailer, averageRating, totalReviews,
     releaseYear, language, director, genres, cast, reviews, addedBy } = movie;
 
-  const hasReviewed = reviews?.some((r) => r.user?._id === user?._id);
+  const hasReviewed = (reviews ?? []).some((r) => r.user?._id === user?._id);
 
-  const isInWatchlist = watchlistData?.some(m => m._id === id);
+  const isInWatchlist = (watchlistData?.data ?? watchlistData ?? []).some?.(m => m._id === id);
 
   const handleWatchlist = () => {
     if (!isAuthenticated) return toast.error('Please log in first');
@@ -103,9 +103,9 @@ export default function MovieDetail() {
               </div>
 
               {/* Genres */}
-              {genres?.length > 0 && (
+              {(genres ?? []).length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {genres.map((g) => (
+                  {(genres ?? []).map((g) => (
                     <span key={g._id} className="badge-primary">{g.name}</span>
                   ))}
                 </div>
@@ -134,11 +134,11 @@ export default function MovieDetail() {
               <p className="text-slate-300 text-sm leading-relaxed max-w-2xl">{description}</p>
 
               {/* Cast */}
-              {cast?.length > 0 && (
+              {(cast ?? []).length > 0 && (
                 <div>
                   <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-2">Cast</p>
                   <div className="flex flex-wrap gap-2">
-                    {cast.map((c, i) => (
+                    {(cast ?? []).map((c, i) => (
                       <span key={i} className="glass px-3 py-1 rounded-lg text-xs text-slate-300">
                         <span className="text-white font-medium">{c.name}</span>
                         {c.role && <span className="text-slate-500"> as {c.role}</span>}
@@ -210,7 +210,7 @@ export default function MovieDetail() {
           </div>
         )}
 
-        <ReviewList reviews={reviews} />
+        <ReviewList reviews={reviews ?? []} />
       </div>
     </div>
   );

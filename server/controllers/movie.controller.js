@@ -127,7 +127,7 @@ export const getSearchSuggestions = async (req, res, next) => {
   try {
     const { q } = req.query;
 
-    if (!q || q.length < 2) {
+    if (!q || q.length < 1) {
       return res.json({ success: true, data: [] });
     }
 
