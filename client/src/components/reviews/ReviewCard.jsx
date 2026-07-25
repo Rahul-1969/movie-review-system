@@ -1,10 +1,14 @@
-import { ThumbsUp, Flag, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { ThumbsUp, Flag, Trash2, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useToggleLike, useDeleteReview, useFlagReview } from '../../hooks/useReviews.js';
 import { formatRelativeTime } from '../../utils/formatDate.js';
 import { getRatingBgColor } from '../../utils/ratingHelper.js';
 import StarRating from '../movies/StarRating.jsx';
+import CommentThread from './CommentThread.jsx';
+import CommentForm from './CommentForm.jsx';
+import { useComments } from '../../hooks/useComments.js';
 
 export default function ReviewCard({ review }) {
   const { user, isAdmin } = useAuth();
@@ -12,9 +16,12 @@ export default function ReviewCard({ review }) {
   const deleteReview = useDeleteReview();
   const flagReview = useFlagReview();
 
-  const { _id, rating, comment, user: reviewer, likes, isFlagged, createdAt } = review;
+  const { _id, rating, comment, user: reviewer, likes, isFlagged, createdAt, commentCount = 0 } = review;
   const isOwner = user?._id === reviewer?._id;
   const isLiked = likes?.includes(user?._id);
+
+  const [showComments, setShowComments] = useState(false);
+  const { data: comments, isLoading: isLoadingComments } = useComments(showComments ? _id : null);
 
   return (
     <div className={`card p-5 animate-slide-up ${isFlagged ? 'border-red-500/20' : ''}`}>
@@ -68,6 +75,18 @@ export default function ReviewCard({ review }) {
           {likes?.length || 0} {likes?.length === 1 ? 'Like' : 'Likes'}
         </button>
 
+        <button
+          onClick={() => setShowComments(!showComments)}
+          className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors ${
+            showComments
+              ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+              : 'text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 border border-transparent'
+          }`}
+        >
+          <MessageCircle className={`w-3.5 h-3.5 ${showComments ? 'fill-current' : ''}`} />
+          {commentCount} {commentCount === 1 ? 'Comment' : 'Comments'}
+        </button>
+
         {isFlagged && (
           <span className="badge-danger text-xs">Flagged</span>
         )}
@@ -98,6 +117,27 @@ export default function ReviewCard({ review }) {
           )}
         </div>
       </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="mt-4 pt-4 border-t border-white/10 animate-fade-in">
+          <h4 className="text-sm font-semibold text-white mb-4">Comments ({commentCount})</h4>
+          
+          <CommentForm reviewId={_id} />
+          
+          <div className="mt-6 space-y-4">
+            {isLoadingComments ? (
+              <div className="text-center py-4 text-slate-500 text-sm">Loading comments...</div>
+            ) : comments?.length > 0 ? (
+              comments.map((c) => (
+                <CommentThread key={c._id} comment={c} reviewId={_id} />
+              ))
+            ) : (
+              <p className="text-center py-4 text-slate-500 text-sm">No comments yet. Be the first!</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

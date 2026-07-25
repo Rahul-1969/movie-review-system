@@ -43,3 +43,19 @@ export const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+/**
+ * Comment submission rate limiter: 20 comments per hour per user
+ * Must be used after verifyToken so req.user is available
+ */
+export const commentLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 20,
+  keyGenerator: (req) => req.user?.id || req.ip,
+  message: {
+    success: false,
+    message: 'Comment limit reached. You can submit up to 20 comments per hour.',
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
