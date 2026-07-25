@@ -18,6 +18,14 @@ export default function MovieDetail() {
   const { user, isAuthenticated } = useAuth();
   const [watchlistLoading, setWatchlistLoading] = useState(false);
 
+  const toggleWatchlist = useToggleWatchlist();
+  
+  const { data: watchlistData } = useQuery({
+    queryKey: ['watchlist'],
+    queryFn: () => usersApi.getWatchlist().then((r) => r.data),
+    enabled: isAuthenticated
+  });
+
   if (isLoading) return <PageLoader />;
   if (!data?.data) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center">
@@ -32,14 +40,6 @@ export default function MovieDetail() {
 
   const hasReviewed = reviews?.some((r) => r.user?._id === user?._id);
 
-  const toggleWatchlist = useToggleWatchlist();
-  
-  const { data: watchlistData } = useQuery({
-    queryKey: ['watchlist'],
-    queryFn: () => usersApi.getWatchlist().then((r) => r.data),
-    enabled: isAuthenticated
-  });
-  
   const isInWatchlist = watchlistData?.some(m => m._id === id);
 
   const handleWatchlist = () => {

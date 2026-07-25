@@ -131,12 +131,11 @@ export const getSearchSuggestions = async (req, res, next) => {
       return res.json({ success: true, data: [] });
     }
 
-    const movies = await Movie.find(
-      { isPublished: true, $text: { $search: q } },
-      { score: { $meta: 'textScore' } }
-    )
+    const movies = await Movie.find({
+      isPublished: true,
+      title: { $regex: q, $options: 'i' }
+    })
       .select('_id title poster releaseYear averageRating')
-      .sort({ score: { $meta: 'textScore' } })
       .limit(6)
       .lean();
 
