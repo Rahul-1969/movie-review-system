@@ -66,7 +66,7 @@ export default function CommentThread({ comment, reviewId, level = 0 }) {
               )}
               <span className="text-xs text-slate-500">{formatRelativeTime(createdAt)}</span>
               {wasEdited && !isDeleted && (
-                <span className="text-xs text-slate-600 italic">(edited)</span>
+                <span className="text-xs text-slate-500 italic">(edited)</span>
               )}
             </div>
 

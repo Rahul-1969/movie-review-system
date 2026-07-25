@@ -19,18 +19,18 @@
   }
 
   .light {
-    --color-white: 15 23 42; /* slate-900 */
-    --color-slate-100: 30 41 59; /* slate-800 */
-    --color-slate-200: 51 65 85; /* slate-700 */
-    --color-slate-300: 71 85 105; /* slate-600 */
+    --color-white: 15 23 42;        /* slate-900 — text becomes dark */
+    --color-slate-100: 30 41 59;    /* slate-800 */
+    --color-slate-200: 51 65 85;    /* slate-700 */
+    --color-slate-300: 71 85 105;   /* slate-600 */
     --color-slate-400: 100 116 139; /* slate-500 */
     --color-slate-500: 148 163 184; /* slate-400 */
     
-    --color-dark-50: 2 6 23; /* slate-950 */
-    --color-dark-100: 15 23 42; /* slate-900 */
-    --color-dark-800: 255 255 255; /* white */
-    --color-dark-900: 241 245 249; /* slate-100 */
-    --color-dark-950: 248 250 252; /* slate-50 */
+    --color-dark-50: 2 6 23;        /* slate-950 */
+    --color-dark-100: 15 23 42;     /* slate-900 */
+    --color-dark-800: 248 250 252;  /* slate-50  — surfaces become very light */
+    --color-dark-900: 241 245 249;  /* slate-100 — panels become light gray */
+    --color-dark-950: 255 255 255;  /* white     — page body becomes white */
   }
 
   * {
@@ -56,7 +56,7 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    @apply bg-slate-600 rounded-full;
+    @apply bg-slate-400 rounded-full;
   }
 
   ::-webkit-scrollbar-thumb:hover {
@@ -70,7 +70,7 @@
   }
 
   .btn-ghost {
-    @apply bg-white/5 hover:bg-white/10 text-slate-200 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 border border-white/10 hover:border-white/20;
+    @apply bg-dark-800/40 hover:bg-dark-800/60 text-slate-200 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 border border-white/10 hover:border-white/20;
   }
 
   .btn-danger {
@@ -81,34 +81,17 @@
     @apply block text-sm font-medium text-slate-300 mb-1.5;
   }
 
-  .light .label {
-    @apply text-slate-700;
-  }
-
   .card {
-    @apply bg-dark-800/50 backdrop-blur-sm border border-white/5 rounded-2xl;
-  }
-
-  .light .card {
-    @apply bg-white/80 border-slate-200;
+    @apply bg-dark-800/60 backdrop-blur-sm border border-white/10 rounded-2xl;
   }
 
   .glass {
     @apply bg-dark-900/80 backdrop-blur-md border border-white/10 rounded-2xl;
   }
 
-  .light .glass {
-    @apply bg-white/90 border-black/10;
-  }
-
   .input, .textarea, .select {
-    @apply w-full bg-dark-800/60 border border-white/10 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-200;
+    @apply w-full bg-dark-800 border border-white/10 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-200;
   }
-
-  .light .input, .light .textarea, .light .select {
-    @apply bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-400;
-  }
-
 
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
@@ -139,7 +122,12 @@
   }
 
   .shimmer-bg {
-    background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+    background: linear-gradient(
+      90deg,
+      rgb(var(--color-dark-800)) 25%,
+      rgb(var(--color-dark-900)) 50%,
+      rgb(var(--color-dark-800)) 75%
+    );
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }

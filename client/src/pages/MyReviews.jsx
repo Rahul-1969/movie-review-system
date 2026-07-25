@@ -40,7 +40,7 @@ export default function MyReviews() {
 
       {reviews.length === 0 ? (
         <div className="card p-16 text-center">
-          <Star className="w-16 h-16 text-slate-700 mx-auto mb-4" />
+          <Star className="w-16 h-16 text-slate-500 mx-auto mb-4" />
           <p className="text-slate-400 text-lg font-medium">No reviews yet</p>
           <p className="text-slate-500 text-sm mt-1">Start reviewing movies you've watched!</p>
           <Link to="/" className="btn-primary mt-6 inline-block">Browse Movies</Link>
