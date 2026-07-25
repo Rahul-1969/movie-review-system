@@ -9,6 +9,7 @@ import movieRoutes from './routes/movie.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
+import listRoutes from './routes/list.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { authLimiter } from './middleware/rateLimiter.middleware.js';
 
@@ -40,6 +41,7 @@ app.use('/api/movies', movieRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/lists', listRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

@@ -18,6 +18,8 @@ import PublicProfile from './pages/PublicProfile.jsx';
 import MyReviews from './pages/MyReviews.jsx';
 import Watchlist from './pages/Watchlist.jsx';
 import Profile from './pages/Profile.jsx';
+import MyLists from './pages/MyLists.jsx';
+import ListDetail from './pages/ListDetail.jsx';
 
 // Admin pages
 import Dashboard from './pages/admin/Dashboard.jsx';
@@ -43,12 +45,14 @@ function App() {
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/movies/:id" element={<MovieDetail />} />
             <Route path="/users/:id" element={<PublicProfile />} />
+            <Route path="/lists/:id" element={<ListDetail />} />
 
             {/* Protected — any authenticated user */}
             <Route element={<ProtectedRoute />}>
               <Route path="/my-reviews" element={<MyReviews />} />
               <Route path="/watchlist" element={<Watchlist />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/my-lists" element={<MyLists />} />
             </Route>
 
             {/* Protected — admin only */}

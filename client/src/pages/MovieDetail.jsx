@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Globe, User, Star, Heart, Play, ArrowLeft } from 'lucide-react';
+import { Calendar, Globe, User, Star, Heart, Play, ArrowLeft, ListPlus, Check, Plus } from 'lucide-react';
 import { useMovie, useToggleWatchlist } from '../hooks/useMovies.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { usersApi } from '../api/users.api.js';
@@ -9,8 +9,9 @@ import ReviewForm from '../components/reviews/ReviewForm.jsx';
 import ReviewList from '../components/reviews/ReviewList.jsx';
 import StarRating from '../components/movies/StarRating.jsx';
 import { getRatingBgColor } from '../utils/ratingHelper.js';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import toast from 'react-hot-toast';
+import { useMyLists, useAddToList, useRemoveFromList } from '../hooks/useLists.js';
 
 export default function MovieDetail() {
   const { id } = useParams();
@@ -19,6 +20,21 @@ export default function MovieDetail() {
   const [watchlistLoading, setWatchlistLoading] = useState(false);
 
   const toggleWatchlist = useToggleWatchlist();
+  const { data: myListsData } = useMyLists();
+  const addToList = useAddToList();
+  const removeFromList = useRemoveFromList();
+  const [listDropdownOpen, setListDropdownOpen] = useState(false);
+  const listDropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (listDropdownRef.current && !listDropdownRef.current.contains(e.target)) {
+        setListDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
   
   const { data: watchlistData } = useQuery({
     queryKey: ['watchlist'],
@@ -161,6 +177,62 @@ export default function MovieDetail() {
                     {isInWatchlist ? 'In Watchlist' : 'Watchlist'}
                   </button>
                 )}
+
+                {/* Add to List */}
+                {isAuthenticated && (
+                  <div className="relative" ref={listDropdownRef}>
+                    <button
+                      onClick={() => setListDropdownOpen((o) => !o)}
+                      className="btn-ghost flex items-center gap-2"
+                    >
+                      <ListPlus className="w-4 h-4" /> Add to List
+                    </button>
+                    {listDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-2 w-60 glass rounded-xl shadow-xl shadow-black/20 z-[100] overflow-hidden animate-fade-in">
+                        {(myListsData?.data ?? []).length === 0 ? (
+                          <div className="p-4 text-center">
+                            <p className="text-sm text-slate-400 mb-3">No lists yet</p>
+                            <Link to="/my-lists" onClick={() => setListDropdownOpen(false)} className="btn-primary text-xs py-1.5 px-3">
+                              <Plus className="w-3 h-3 inline mr-1" />Create a List
+                            </Link>
+                          </div>
+                        ) : (
+                          <ul className="py-1.5">
+                            {(myListsData?.data ?? []).map((list) => {
+                              const inList = (list.movies ?? []).some((m) => (m._id || m) === id);
+                              return (
+                                <li key={list._id}>
+                                  <button
+                                    onClick={() => {
+                                      if (inList) {
+                                        removeFromList.mutate({ listId: list._id, movieId: id });
+                                      } else {
+                                        addToList.mutate({ listId: list._id, movieId: id });
+                                      }
+                                    }}
+                                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm hover:bg-white/5 transition-colors text-left"
+                                  >
+                                    <Check className={`w-4 h-4 shrink-0 ${inList ? 'text-primary-400' : 'text-transparent'}`} />
+                                    <span className="truncate text-slate-200">{list.name}</span>
+                                    <span className="text-xs text-slate-500 ml-auto shrink-0">{list.movies?.length ?? 0}</span>
+                                  </button>
+                                </li>
+                              );
+                            })}
+                            <div className="h-px bg-white/5 my-1" />
+                            <li>
+                              <Link to="/my-lists" onClick={() => setListDropdownOpen(false)}
+                                className="flex items-center gap-2 w-full px-4 py-2.5 text-xs text-primary-400 hover:bg-white/5 transition-colors">
+                                <Plus className="w-3.5 h-3.5" /> New list
+                              </Link>
+                            </li>
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {youtubeId && (
                   <a
                     href={trailer}

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Film, Menu, X, User, LogOut, LayoutDashboard, Heart, Star, ChevronDown, Sun, Moon } from 'lucide-react';
+import { Film, Menu, X, User, LogOut, LayoutDashboard, Heart, Star, ChevronDown, Sun, Moon, ListPlus } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
 import toast from 'react-hot-toast';
@@ -50,6 +50,9 @@ export default function Navbar() {
               <>
                 <Link to="/watchlist" className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm font-medium">
                   Watchlist
+                </Link>
+                <Link to="/my-lists" className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm font-medium">
+                  My Lists
                 </Link>
                 <Link to="/my-reviews" className="px-4 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-all text-sm font-medium">
                   My Reviews
@@ -104,6 +107,10 @@ export default function Navbar() {
                         className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-white/5 transition-colors">
                         <Heart className="w-4 h-4" /> Watchlist
                       </Link>
+                      <Link to="/my-lists" onClick={() => setDropOpen(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-white/5 transition-colors">
+                        <ListPlus className="w-4 h-4" /> My Lists
+                      </Link>
                       <Link to="/my-reviews" onClick={() => setDropOpen(false)}
                         className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-slate-200 hover:bg-white/5 transition-colors">
                         <Star className="w-4 h-4" /> My Reviews
@@ -145,6 +152,7 @@ export default function Navbar() {
             {isAuthenticated && (
               <>
                 <Link to="/watchlist" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Watchlist</Link>
+                <Link to="/my-lists" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors">My Lists</Link>
                 <Link to="/my-reviews" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors">My Reviews</Link>
                 <Link to="/profile" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors">Profile</Link>
                 {isAdmin && <Link to="/admin/dashboard" onClick={() => setMenuOpen(false)} className="block px-4 py-2.5 rounded-lg text-primary-400 hover:bg-primary-500/10 transition-colors">Admin</Link>}
