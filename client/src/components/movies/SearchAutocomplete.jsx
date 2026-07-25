@@ -89,13 +89,13 @@ export default function SearchAutocomplete({ onSearchChange }) {
         onFocus={() => setIsOpen(true)}
         className="w-full bg-dark-800/80 backdrop-blur-sm border border-white/10 rounded-2xl pl-12 pr-12 py-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all text-sm shadow-xl"
       />
-      {isLoading && query.length >= 2 && (
+      {isLoading && query.length >= 1 && (
         <div className="absolute right-4 top-1/2 -translate-y-1/2">
           <Loader2 className="w-5 h-5 text-primary-500 animate-spin" />
         </div>
       )}
 
-      {isOpen && query.length >= 2 && !isLoading && (
+      {isOpen && query.length >= 1 && !isLoading && (
         <div className="absolute top-full left-0 right-0 mt-2 glass shadow-xl shadow-black/20 rounded-xl overflow-hidden z-[100] animate-fade-in">
           {suggestions.length > 0 ? (
             <ul className="py-2">

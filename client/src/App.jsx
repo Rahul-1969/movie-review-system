@@ -3,6 +3,7 @@ import Navbar from './components/common/Navbar.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
 import ScrollToTop from './components/common/ScrollToTop.jsx';
+import { ErrorBoundary } from './components/common/ErrorBoundary.jsx';
 
 // Public pages
 import Home from './pages/Home.jsx';
@@ -32,8 +33,9 @@ function App() {
       <div className="min-h-screen flex flex-col bg-dark-950">
         <Navbar />
         <main className="flex-1">
-          <Routes>
-            {/* Public */}
+          <ErrorBoundary>
+            <Routes>
+              {/* Public */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -61,7 +63,8 @@ function App() {
 
             {/* 404 */}
             <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+            </Routes>
+          </ErrorBoundary>
         </main>
         <Footer />
       </div>

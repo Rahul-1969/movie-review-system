@@ -45,7 +45,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* ── Hero Banner ─────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-dark-950 via-dark-900 to-primary-900/20 py-20 px-4">
+      <section className="relative bg-gradient-to-br from-dark-950 via-dark-900 to-primary-900/20 py-20 px-4">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(99,102,241,0.15)_0%,transparent_60%)]" />
         <div className="max-w-4xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-sm font-medium mb-6 animate-fade-in">

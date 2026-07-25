@@ -24,7 +24,7 @@ export const useSearchSuggestions = (query) => {
   return useQuery({
     queryKey: ['movies', 'search-suggestions', debouncedQuery],
     queryFn: () => moviesApi.getSearchSuggestions(debouncedQuery).then((r) => r.data),
-    enabled: debouncedQuery.length >= 2,
+    enabled: debouncedQuery.length >= 1,
     staleTime: 0,
   });
 };
