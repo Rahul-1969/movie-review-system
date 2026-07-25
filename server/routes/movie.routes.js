@@ -3,6 +3,7 @@ import {
   getMovies,
   getTopRated,
   getTrending,
+  getSearchSuggestions,
   getMovieById,
   createMovie,
   updateMovie,
@@ -78,6 +79,22 @@ router.get('/top-rated', getTopRated);
  *         description: Trending movies
  */
 router.get('/trending', getTrending);
+
+/**
+ * @swagger
+ * /api/movies/search-suggestions:
+ *   get:
+ *     tags: [Movies]
+ *     summary: Get movie search autocomplete suggestions
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Search suggestions
+ */
+router.get('/search-suggestions', getSearchSuggestions);
 
 /**
  * @swagger

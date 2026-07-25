@@ -1,18 +1,38 @@
-import { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, TrendingUp, Star } from 'lucide-react';
-import { useMovies, useTopRated, useTrending } from '../hooks/useMovies.js';
+import { useState, useRef, useMemo } from 'react';
+import { Search, ChevronLeft, ChevronRight, TrendingUp, Star, Loader2 } from 'lucide-react';
+import { useInfiniteMovies, useTopRated, useTrending } from '../hooks/useMovies.js';
+import { useIntersectionObserver } from '../hooks/useIntersectionObserver.js';
 import MovieGrid from '../components/movies/MovieGrid.jsx';
 import MovieFilters from '../components/movies/MovieFilters.jsx';
+import SearchAutocomplete from '../components/movies/SearchAutocomplete.jsx';
 
 export default function Home() {
   const [filters, setFilters] = useState({ page: 1, limit: 20 });
 
-  const { data: moviesData, isLoading } = useMovies(filters);
+  const { 
+    data: moviesData, 
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useInfiniteMovies(filters);
+
   const { data: topRatedData } = useTopRated();
   const { data: trendingData } = useTrending();
 
-  const movies = moviesData?.data || [];
-  const pagination = moviesData?.pagination;
+  const movies = useMemo(() => {
+    return moviesData?.pages.flatMap((page) => page.data) || [];
+  }, [moviesData]);
+  
+  const totalMovies = moviesData?.pages[0]?.pagination?.total || 0;
+
+  const loadMoreRef = useRef(null);
+
+  useIntersectionObserver({
+    target: loadMoreRef,
+    onIntersect: fetchNextPage,
+    enabled: !!hasNextPage && !isFetchingNextPage,
+  });
   const topRated = topRatedData?.data || [];
   const trending = trendingData?.data || [];
 
@@ -33,16 +53,9 @@ export default function Home() {
           <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto text-balance">
             Join thousands of film lovers. Rate movies, write reviews, build your watchlist.
           </p>
-          <div className="relative max-w-xl mx-auto">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              id="hero-search"
-              type="text"
-              placeholder="Search for a movie..."
-              onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value, page: 1 }))}
-              className="w-full bg-dark-800/80 backdrop-blur-sm border border-white/10 rounded-2xl pl-12 pr-4 py-4 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all text-sm shadow-xl"
-            />
-          </div>
+          <SearchAutocomplete 
+            onSearchChange={(value) => setFilters((f) => ({ ...f, search: value, page: 1 }))} 
+          />
         </div>
       </section>
 
@@ -84,53 +97,20 @@ export default function Home() {
           {/* Grid */}
           <MovieGrid movies={movies} loading={isLoading} />
 
-          {/* Pagination */}
-          {pagination && pagination.pages > 1 && (
-            <div className="flex items-center justify-center gap-3 mt-10">
-              <button
-                id="prev-page-btn"
-                disabled={pagination.page <= 1}
-                onClick={() => setFilters((f) => ({ ...f, page: f.page - 1 }))}
-                className="flex items-center gap-1.5 btn-ghost disabled:opacity-40"
-              >
-                <ChevronLeft className="w-4 h-4" /> Prev
-              </button>
-
-              <div className="flex items-center gap-1">
-                {Array.from({ length: Math.min(pagination.pages, 7) }, (_, i) => {
-                  const p = i + 1;
-                  return (
-                    <button
-                      key={p}
-                      id={`page-btn-${p}`}
-                      onClick={() => setFilters((f) => ({ ...f, page: p }))}
-                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
-                        pagination.page === p
-                          ? 'bg-primary-500 text-white'
-                          : 'text-slate-400 hover:bg-white/5'
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <button
-                id="next-page-btn"
-                disabled={pagination.page >= pagination.pages}
-                onClick={() => setFilters((f) => ({ ...f, page: f.page + 1 }))}
-                className="flex items-center gap-1.5 btn-ghost disabled:opacity-40"
-              >
-                Next <ChevronRight className="w-4 h-4" />
-              </button>
+          {/* Infinite Scroll Sentinel */}
+          {!isLoading && (
+            <div ref={loadMoreRef} className="py-8 flex justify-center items-center">
+              {isFetchingNextPage ? (
+                <div className="flex items-center gap-2 text-primary-400">
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span className="text-sm font-medium">Loading more movies...</span>
+                </div>
+              ) : !hasNextPage && movies.length > 0 ? (
+                <p className="text-slate-500 text-sm">
+                  You've reached the end. Showing all {movies.length} movies.
+                </p>
+              ) : null}
             </div>
-          )}
-
-          {pagination && (
-            <p className="text-center text-slate-500 text-sm mt-4">
-              Showing {movies.length} of {pagination.total} movies
-            </p>
           )}
         </section>
       </div>

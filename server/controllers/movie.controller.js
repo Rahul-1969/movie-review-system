@@ -121,6 +121,30 @@ export const getTrending = async (req, res, next) => {
   }
 };
 
+// ─── GET /api/movies/search-suggestions ───────────────────────────────────────
+export const getSearchSuggestions = async (req, res, next) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || q.length < 2) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const movies = await Movie.find(
+      { isPublished: true, $text: { $search: q } },
+      { score: { $meta: 'textScore' } }
+    )
+      .select('_id title poster releaseYear averageRating')
+      .sort({ score: { $meta: 'textScore' } })
+      .limit(6)
+      .lean();
+
+    res.json({ success: true, data: movies });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ─── GET /api/movies/:id ──────────────────────────────────────────────────────
 export const getMovieById = async (req, res, next) => {
   try {
