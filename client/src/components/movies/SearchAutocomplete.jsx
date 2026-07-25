@@ -96,7 +96,7 @@ export default function SearchAutocomplete({ onSearchChange }) {
       )}
 
       {isOpen && query.length >= 2 && !isLoading && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-dark-800 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50">
+        <div className="absolute top-full left-0 right-0 mt-2 glass shadow-xl shadow-black/20 rounded-xl overflow-hidden z-50 animate-fade-in">
           {suggestions.length > 0 ? (
             <ul className="py-2">
               {suggestions.map((movie, index) => (

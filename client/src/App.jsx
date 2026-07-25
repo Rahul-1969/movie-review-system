@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/common/Navbar.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
+import ScrollToTop from './components/common/ScrollToTop.jsx';
 
 // Public pages
 import Home from './pages/Home.jsx';
@@ -27,6 +28,7 @@ import Analytics from './pages/admin/Analytics.jsx';
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="min-h-screen flex flex-col bg-dark-950">
         <Navbar />
         <main className="flex-1">
