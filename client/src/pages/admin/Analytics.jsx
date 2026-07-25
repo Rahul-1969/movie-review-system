@@ -11,8 +11,8 @@ import {
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="glass px-3 py-2 text-xs">
-      <p className="text-slate-300 font-medium">{label}</p>
+    <div className="bg-dark-800 border border-white/10 rounded-lg shadow-xl px-3 py-2 text-xs">
+      <p className="text-slate-300 font-medium mb-1">{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }}>{p.name}: {p.value}</p>
       ))}
@@ -27,7 +27,24 @@ export default function Analytics() {
     staleTime: 1000 * 60 * 5,
   });
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex gap-8">
+          <AdminSidebar />
+          <div className="flex-1 space-y-8 animate-pulse">
+            <div>
+              <div className="h-10 bg-white/5 rounded w-1/4 mb-2"></div>
+              <div className="h-4 bg-white/5 rounded w-1/3"></div>
+            </div>
+            <div className="card p-6 h-[300px] bg-white/5"></div>
+            <div className="card p-6 h-[300px] bg-white/5"></div>
+            <div className="card p-6 h-[300px] bg-white/5"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const analytics = data?.data;
 
@@ -68,7 +85,7 @@ export default function Analytics() {
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-slate-500 text-center py-8">No review data yet</p>
+              <p className="text-slate-500 text-center py-12">Not enough data yet</p>
             )}
           </div>
 
@@ -87,7 +104,7 @@ export default function Analytics() {
                 </LineChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-slate-500 text-center py-8">No user data yet</p>
+              <p className="text-slate-500 text-center py-12">Not enough data yet</p>
             )}
           </div>
 
@@ -120,7 +137,7 @@ export default function Analytics() {
                 ))}
               </div>
             ) : (
-              <p className="text-slate-500 text-center py-8">No movies reviewed yet</p>
+              <p className="text-slate-500 text-center py-12">Not enough data yet</p>
             )}
           </div>
         </div>

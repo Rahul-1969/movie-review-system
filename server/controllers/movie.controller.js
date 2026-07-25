@@ -3,6 +3,7 @@ import Movie from '../models/Movie.model.js';
 import Review from '../models/Review.model.js';
 import Genre from '../models/Genre.model.js';
 import { getCache, setCache, deleteCache, deleteCachePattern } from '../services/cache.service.js';
+import { getRecommendations } from '../services/recommendation.service.js';
 import cloudinary from '../config/cloudinary.js';
 
 const CACHE_KEYS = {
@@ -140,6 +141,26 @@ export const getSearchSuggestions = async (req, res, next) => {
       .lean();
 
     res.json({ success: true, data: movies });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── GET /api/movies/recommendations ──────────────────────────────────────────
+export const getMyRecommendations = async (req, res, next) => {
+  try {
+    const userId = req.user._id;
+    const cacheKey = `recommendations:${userId}`;
+    
+    const cached = await getCache(cacheKey);
+    if (cached) {
+      return res.json({ success: true, data: cached.movies, topGenre: cached.topGenre, fromCache: true });
+    }
+
+    const recommendations = await getRecommendations(userId);
+    await setCache(cacheKey, recommendations, 3600); // 1 hour
+    
+    res.json({ success: true, data: recommendations.movies, topGenre: recommendations.topGenre });
   } catch (err) {
     next(err);
   }

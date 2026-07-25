@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Calendar, Globe, User, Star, Heart, Play, ArrowLeft } from 'lucide-react';
-import { useMovie } from '../hooks/useMovies.js';
+import { useMovie, useToggleWatchlist } from '../hooks/useMovies.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { usersApi } from '../api/users.api.js';
 import { PageLoader } from '../components/common/Loader.jsx';
@@ -31,17 +32,19 @@ export default function MovieDetail() {
 
   const hasReviewed = reviews?.some((r) => r.user?._id === user?._id);
 
-  const handleWatchlist = async () => {
+  const toggleWatchlist = useToggleWatchlist();
+  
+  const { data: watchlistData } = useQuery({
+    queryKey: ['watchlist'],
+    queryFn: () => usersApi.getWatchlist().then((r) => r.data),
+    enabled: isAuthenticated
+  });
+  
+  const isInWatchlist = watchlistData?.some(m => m._id === id);
+
+  const handleWatchlist = () => {
     if (!isAuthenticated) return toast.error('Please log in first');
-    setWatchlistLoading(true);
-    try {
-      const res = await usersApi.toggleWatchlist(id);
-      toast.success(res.data.message);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed');
-    } finally {
-      setWatchlistLoading(false);
-    }
+    toggleWatchlist.mutate(id);
   };
 
   // Extract YouTube video ID
@@ -151,11 +154,11 @@ export default function MovieDetail() {
                   <button
                     id="watchlist-btn"
                     onClick={handleWatchlist}
-                    disabled={watchlistLoading}
-                    className="btn-ghost flex items-center gap-2"
+                    disabled={toggleWatchlist.isPending}
+                    className={`btn-ghost flex items-center gap-2 ${isInWatchlist ? 'text-primary-400 bg-primary-500/10 border-primary-500/20' : ''}`}
                   >
-                    <Heart className="w-4 h-4" />
-                    {watchlistLoading ? 'Updating...' : 'Watchlist'}
+                    <Heart className={`w-4 h-4 ${isInWatchlist ? 'fill-current' : ''}`} />
+                    {isInWatchlist ? 'In Watchlist' : 'Watchlist'}
                   </button>
                 )}
                 {youtubeId && (

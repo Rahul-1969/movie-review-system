@@ -1,4 +1,5 @@
 import { ThumbsUp, Flag, Trash2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useToggleLike, useDeleteReview, useFlagReview } from '../../hooks/useReviews.js';
 import { formatRelativeTime } from '../../utils/formatDate.js';
@@ -20,16 +21,20 @@ export default function ReviewCard({ review }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          {reviewer?.avatar?.url ? (
-            <img src={reviewer.avatar.url} alt={reviewer.name}
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-primary-500/20" />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
-              {reviewer?.name?.[0]?.toUpperCase()}
-            </div>
-          )}
+          <Link to={`/users/${reviewer?._id}`} className="hover:opacity-80 transition-opacity">
+            {reviewer?.avatar?.url ? (
+              <img src={reviewer.avatar.url} alt={reviewer.name}
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-primary-500/20" />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
+                {reviewer?.name?.[0]?.toUpperCase()}
+              </div>
+            )}
+          </Link>
           <div>
-            <p className="font-semibold text-white text-sm">{reviewer?.name}</p>
+            <Link to={`/users/${reviewer?._id}`} className="hover:text-primary-400 transition-colors">
+              <p className="font-semibold text-white text-sm">{reviewer?.name}</p>
+            </Link>
             <p className="text-xs text-slate-500">{formatRelativeTime(createdAt)}</p>
           </div>
         </div>
@@ -52,14 +57,14 @@ export default function ReviewCard({ review }) {
         <button
           id={`like-btn-${_id}`}
           onClick={() => toggleLike.mutate(_id)}
-          disabled={!user || toggleLike.isPending}
+          disabled={!user}
           className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors ${
             isLiked
               ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
               : 'text-slate-400 hover:text-primary-400 hover:bg-primary-500/10 border border-transparent'
           }`}
         >
-          <ThumbsUp className="w-3.5 h-3.5" />
+          <ThumbsUp className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
           {likes?.length || 0} {likes?.length === 1 ? 'Like' : 'Likes'}
         </button>
 

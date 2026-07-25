@@ -1,5 +1,7 @@
 # 🎬 Movie Review System — Full-Stack MERN
 
+[![CI](https://github.com/Rahul-1969/movie-review-system/actions/workflows/ci.yml/badge.svg)](https://github.com/Rahul-1969/movie-review-system/actions/workflows/ci.yml)
+
 A production-ready, resume-level Movie Review platform with role-based access (Admin & User), Redis caching, BullMQ email queues, Cloudinary image uploads, and JWT authentication.
 
 ## Tech Stack

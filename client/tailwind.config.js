@@ -5,6 +5,14 @@ export default {
   theme: {
     extend: {
       colors: {
+        white: 'rgb(var(--color-white) / <alpha-value>)',
+        slate: {
+          100: 'rgb(var(--color-slate-100) / <alpha-value>)',
+          200: 'rgb(var(--color-slate-200) / <alpha-value>)',
+          300: 'rgb(var(--color-slate-300) / <alpha-value>)',
+          400: 'rgb(var(--color-slate-400) / <alpha-value>)',
+          500: 'rgb(var(--color-slate-500) / <alpha-value>)',
+        },
         primary: {
           50: '#eef2ff',
           100: '#e0e7ff',
@@ -15,11 +23,11 @@ export default {
           900: '#312e81',
         },
         dark: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#020617',
+          50: 'rgb(var(--color-dark-50) / <alpha-value>)',
+          100: 'rgb(var(--color-dark-100) / <alpha-value>)',
+          800: 'rgb(var(--color-dark-800) / <alpha-value>)',
+          900: 'rgb(var(--color-dark-900) / <alpha-value>)',
+          950: 'rgb(var(--color-dark-950) / <alpha-value>)',
         },
       },
       fontFamily: {

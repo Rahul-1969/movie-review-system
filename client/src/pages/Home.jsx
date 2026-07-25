@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo } from 'react';
-import { Search, ChevronLeft, ChevronRight, TrendingUp, Star, Loader2 } from 'lucide-react';
-import { useInfiniteMovies, useTopRated, useTrending } from '../hooks/useMovies.js';
+import { Search, ChevronLeft, ChevronRight, TrendingUp, Star, Loader2, Sparkles } from 'lucide-react';
+import { useInfiniteMovies, useTopRated, useTrending, useRecommendations } from '../hooks/useMovies.js';
+import { useAuth } from '../hooks/useAuth.js';
 import { useIntersectionObserver } from '../hooks/useIntersectionObserver.js';
 import MovieGrid from '../components/movies/MovieGrid.jsx';
 import MovieFilters from '../components/movies/MovieFilters.jsx';
@@ -19,6 +20,9 @@ export default function Home() {
 
   const { data: topRatedData } = useTopRated();
   const { data: trendingData } = useTrending();
+  
+  const { isAuthenticated } = useAuth();
+  const { data: recData } = useRecommendations(isAuthenticated);
 
   const movies = useMemo(() => {
     return moviesData?.pages.flatMap((page) => page.data) || [];
@@ -35,6 +39,8 @@ export default function Home() {
   });
   const topRated = topRatedData?.data || [];
   const trending = trendingData?.data || [];
+  const recommendations = recData?.data || [];
+  const topGenre = recData?.topGenre;
 
   return (
     <div className="min-h-screen">
@@ -60,6 +66,19 @@ export default function Home() {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+
+        {/* ── Recommendations Section ─────────────────────────────────────────────── */}
+        {isAuthenticated && recommendations.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-6">
+              <Sparkles className="w-5 h-5 text-primary-400" />
+              <h2 className="section-title">
+                {topGenre ? `Because you liked ${topGenre.name}` : 'Recommended For You'}
+              </h2>
+            </div>
+            <MovieGrid movies={recommendations} loading={false} />
+          </section>
+        )}
 
         {/* ── Trending Section ─────────────────────────────────────────────── */}
         {(trending.length > 0 || topRated.length > 0) && (

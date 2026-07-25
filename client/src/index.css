@@ -3,6 +3,36 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-white: 255 255 255;
+    --color-slate-100: 241 245 249;
+    --color-slate-200: 226 232 240;
+    --color-slate-300: 203 213 225;
+    --color-slate-400: 148 163 184;
+    --color-slate-500: 100 116 139;
+    
+    --color-dark-50: 248 250 252;
+    --color-dark-100: 241 245 249;
+    --color-dark-800: 30 41 59;
+    --color-dark-900: 15 23 42;
+    --color-dark-950: 2 6 23;
+  }
+
+  .light {
+    --color-white: 15 23 42; /* slate-900 */
+    --color-slate-100: 30 41 59; /* slate-800 */
+    --color-slate-200: 51 65 85; /* slate-700 */
+    --color-slate-300: 71 85 105; /* slate-600 */
+    --color-slate-400: 100 116 139; /* slate-500 */
+    --color-slate-500: 148 163 184; /* slate-400 */
+    
+    --color-dark-50: 2 6 23; /* slate-950 */
+    --color-dark-100: 15 23 42; /* slate-900 */
+    --color-dark-800: 255 255 255; /* white */
+    --color-dark-900: 241 245 249; /* slate-100 */
+    --color-dark-950: 248 250 252; /* slate-50 */
+  }
+
   * {
     box-sizing: border-box;
   }

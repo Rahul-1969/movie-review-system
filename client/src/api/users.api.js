@@ -5,4 +5,5 @@ export const usersApi = {
   updateProfile: (formData) => api.put('/users/profile', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   toggleWatchlist: (movieId) => api.post(`/users/watchlist/${movieId}`),
   getWatchlist: () => api.get('/users/watchlist'),
+  getPublicProfile: (id) => api.get(`/users/${id}/public`),
 };

@@ -1,5 +1,6 @@
 import User from '../models/User.model.js';
 import Movie from '../models/Movie.model.js';
+import Review from '../models/Review.model.js';
 import cloudinary from '../config/cloudinary.js';
 
 // ─── GET /api/users/profile ───────────────────────────────────────────────────
@@ -82,6 +83,51 @@ export const getWatchlist = async (req, res, next) => {
       .lean();
 
     res.json({ success: true, data: user.watchlist });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ─── GET /api/users/:id/public ────────────────────────────────────────────────
+export const getPublicProfile = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findById(id).select('name avatar createdAt').lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Get aggregated review stats
+    const stats = await Review.aggregate([
+      { $match: { user: user._id } },
+      { 
+        $group: { 
+          _id: null, 
+          totalReviews: { $sum: 1 }, 
+          averageRatingGiven: { $avg: '$rating' } 
+        } 
+      }
+    ]);
+
+    const reviewStats = stats[0] || { totalReviews: 0, averageRatingGiven: 0 };
+
+    // Get 10 most recent reviews
+    const recentReviews = await Review.find({ user: user._id })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .populate('movie', 'title poster')
+      .lean();
+
+    res.json({
+      success: true,
+      data: {
+        ...user,
+        totalReviews: reviewStats.totalReviews,
+        averageRatingGiven: reviewStats.averageRatingGiven ? Number(reviewStats.averageRatingGiven.toFixed(1)) : 0,
+        recentReviews,
+      },
+    });
   } catch (err) {
     next(err);
   }

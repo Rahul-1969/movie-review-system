@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Film, Menu, X, User, LogOut, LayoutDashboard, Heart, Star, ChevronDown } from 'lucide-react';
+import { Film, Menu, X, User, LogOut, LayoutDashboard, Heart, Star, ChevronDown, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
+import { useTheme } from '../../context/ThemeContext.jsx';
 import toast from 'react-hot-toast';
 
 export default function Navbar() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
@@ -63,6 +65,17 @@ export default function Navbar() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+              aria-label="Toggle theme"
+            >
+              <div className="relative w-5 h-5">
+                <Sun className={`absolute inset-0 w-5 h-5 transition-all duration-500 transform ${theme === 'dark' ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'}`} />
+                <Moon className={`absolute inset-0 w-5 h-5 transition-all duration-500 transform ${theme === 'dark' ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'}`} />
+              </div>
+            </button>
+
             {isAuthenticated ? (
               <div className="relative" ref={dropRef}>
                 <button
@@ -138,6 +151,16 @@ export default function Navbar() {
                 <button onClick={handleLogout} className="block w-full text-left px-4 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors">Logout</button>
               </>
             )}
+            <button
+              onClick={toggleTheme}
+              className="flex items-center gap-3 w-full text-left px-4 py-2.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              <div className="relative w-5 h-5">
+                <Sun className={`absolute inset-0 w-5 h-5 transition-all duration-500 transform ${theme === 'dark' ? 'opacity-100 rotate-0' : 'opacity-0 rotate-90'}`} />
+                <Moon className={`absolute inset-0 w-5 h-5 transition-all duration-500 transform ${theme === 'dark' ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'}`} />
+              </div>
+              {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+            </button>
             {!isAuthenticated && (
               <div className="flex gap-2 pt-2">
                 <Link to="/login" onClick={() => setMenuOpen(false)} className="btn-ghost text-sm flex-1 text-center">Sign In</Link>

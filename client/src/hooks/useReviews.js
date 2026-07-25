@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { reviewsApi } from '../api/reviews.api.js';
 import toast from 'react-hot-toast';
+import { useAuth } from './useAuth.js';
 
 export const useMyReviews = (params) => {
   return useQuery({
@@ -50,9 +51,52 @@ export const useDeleteReview = () => {
 
 export const useToggleLike = () => {
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
   return useMutation({
     mutationFn: reviewsApi.toggleLike,
-    onSuccess: () => {
+    onMutate: async (reviewId) => {
+      await queryClient.cancelQueries({ queryKey: ['movie'] });
+      
+      const previousMovies = queryClient.getQueriesData({ queryKey: ['movie'] });
+
+      queryClient.setQueriesData({ queryKey: ['movie'] }, (old) => {
+        if (!old || !old.data || !old.data.reviews) return old;
+        
+        const newReviews = old.data.reviews.map(review => {
+          if (review._id === reviewId) {
+            const userId = user?._id;
+            const isLiked = review.likes?.includes(userId);
+            return {
+              ...review,
+              likes: isLiked 
+                ? review.likes.filter(id => id !== userId)
+                : [...(review.likes || []), userId]
+            };
+          }
+          return review;
+        });
+
+        return {
+          ...old,
+          data: {
+            ...old.data,
+            reviews: newReviews
+          }
+        };
+      });
+
+      return { previousMovies };
+    },
+    onError: (err, reviewId, context) => {
+      if (context?.previousMovies) {
+        context.previousMovies.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data);
+        });
+      }
+      toast.error(err.response?.data?.message || 'Failed to toggle like');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['movie'] });
     },
   });

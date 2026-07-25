@@ -4,6 +4,7 @@ import {
   updateProfile,
   toggleWatchlist,
   getWatchlist,
+  getPublicProfile,
 } from '../controllers/user.controller.js';
 import { verifyToken } from '../middleware/auth.middleware.js';
 import { upload, handleUpload } from '../middleware/upload.middleware.js';
@@ -16,6 +17,25 @@ const router = Router();
  *   name: Users
  *   description: User profile and watchlist
  */
+
+/**
+ * @swagger
+ * /api/users/{id}/public:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get public user profile
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Public user profile
+ *       404:
+ *         description: User not found
+ */
+router.get('/:id/public', getPublicProfile);
 
 /**
  * @swagger

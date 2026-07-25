@@ -4,6 +4,7 @@ import {
   getTopRated,
   getTrending,
   getSearchSuggestions,
+  getMyRecommendations,
   getMovieById,
   createMovie,
   updateMovie,
@@ -95,6 +96,20 @@ router.get('/trending', getTrending);
  *         description: Search suggestions
  */
 router.get('/search-suggestions', getSearchSuggestions);
+
+/**
+ * @swagger
+ * /api/movies/recommendations:
+ *   get:
+ *     tags: [Movies]
+ *     summary: Get personalized movie recommendations
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Personalized recommendations list
+ */
+router.get('/recommendations', verifyToken, getMyRecommendations);
 
 /**
  * @swagger
