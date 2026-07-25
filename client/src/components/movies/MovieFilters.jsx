@@ -42,7 +42,7 @@ export default function MovieFilters({ filters, onChange }) {
         <select
           value={filters.genre || ''}
           onChange={(e) => update('genre', e.target.value)}
-          className="bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 cursor-pointer"
+          className="select w-auto !py-2 !px-3 !text-sm cursor-pointer"
         >
           <option value="">All Genres</option>
           {GENRES.map((g) => <option key={g} value={g.toLowerCase()}>{g}</option>)}
@@ -56,14 +56,14 @@ export default function MovieFilters({ filters, onChange }) {
           max={new Date().getFullYear() + 1}
           value={filters.year || ''}
           onChange={(e) => update('year', e.target.value)}
-          className="bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 w-24 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+          className="input w-24 !py-2 !px-3 !text-sm"
         />
 
         {/* Language */}
         <select
           value={filters.language || ''}
           onChange={(e) => update('language', e.target.value)}
-          className="bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 cursor-pointer"
+          className="select w-auto !py-2 !px-3 !text-sm cursor-pointer"
         >
           <option value="">All Languages</option>
           {LANGUAGES.map((l) => <option key={l} value={l}>{l}</option>)}
@@ -73,7 +73,7 @@ export default function MovieFilters({ filters, onChange }) {
         <select
           value={filters.minRating || ''}
           onChange={(e) => update('minRating', e.target.value)}
-          className="bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 cursor-pointer"
+          className="select w-auto !py-2 !px-3 !text-sm cursor-pointer"
         >
           <option value="">Any Rating</option>
           {[9, 8, 7, 6, 5].map((r) => <option key={r} value={r}>{r}+ ⭐</option>)}
@@ -83,7 +83,7 @@ export default function MovieFilters({ filters, onChange }) {
         <select
           value={filters.sort || '-createdAt'}
           onChange={(e) => update('sort', e.target.value)}
-          className="bg-dark-800/60 border border-white/10 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/50 cursor-pointer"
+          className="select w-auto !py-2 !px-3 !text-sm cursor-pointer"
         >
           {SORT_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>

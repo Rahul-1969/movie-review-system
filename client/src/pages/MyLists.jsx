@@ -61,7 +61,7 @@ function ListFormModal({ onClose, onSubmit, initialValues = {}, title = 'Create 
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
               placeholder="e.g. Marvel Collection"
-              className="input-field w-full"
+              className="input"
               required
             />
           </div>
@@ -73,7 +73,7 @@ function ListFormModal({ onClose, onSubmit, initialValues = {}, title = 'Create 
               maxLength={500}
               rows={3}
               placeholder="Optional description..."
-              className="input-field w-full resize-none"
+              className="textarea resize-none"
             />
           </div>
           <div className="flex items-center gap-3">

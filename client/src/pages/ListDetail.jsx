@@ -23,11 +23,11 @@ function EditModal({ list, onClose, onSubmit, isPending }) {
         <form onSubmit={(e) => { e.preventDefault(); onSubmit({ name, description, isPublic }); }} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Name *</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} className="input-field w-full" required />
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={100} className="input" required />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} rows={3} className="input-field w-full resize-none" />
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} rows={3} className="textarea resize-none" />
           </div>
           <button type="button" onClick={() => setIsPublic(!isPublic)}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all ${isPublic ? 'bg-primary-500/10 border-primary-500/30 text-primary-400' : 'bg-white/5 border-white/10 text-slate-400'}`}>
