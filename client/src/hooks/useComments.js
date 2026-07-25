@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 export const useComments = (reviewId) => {
   return useQuery({
     queryKey: ['comments', reviewId],
-    queryFn: () => commentsApi.getByReviewId(reviewId).then((res) => res.data),
+    queryFn: () => commentsApi.getByReviewId(reviewId).then((res) => res.data.data),
     enabled: !!reviewId,
   });
 };
@@ -81,11 +81,8 @@ export const useToggleCommentLike = () => {
       };
 
       qc.setQueryData(['comments', reviewId], (old) => {
-        if (!old?.data) return old;
-        return {
-          ...old,
-          data: updateTree(old.data)
-        };
+        if (!Array.isArray(old)) return old;
+        return updateTree(old);
       });
 
       return { prev };

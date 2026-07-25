@@ -55,7 +55,7 @@ function ListFormModal({ onClose, onSubmit, initialValues = {}, title = 'Create 
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">List Name *</label>
+            <label className="label">List Name *</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -66,7 +66,7 @@ function ListFormModal({ onClose, onSubmit, initialValues = {}, title = 'Create 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-1.5">Description</label>
+            <label className="label">Description</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}

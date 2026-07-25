@@ -15,10 +15,11 @@ export default function CommentThread({ comment, reviewId, level = 0 }) {
   const [isEditing, setIsEditing] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
 
-  const { _id, text, user: author, likes, isDeleted, createdAt, replies } = comment;
+  const { _id, text, user: author, likes, isDeleted, createdAt, updatedAt, replies } = comment;
   
   const isOwner = user?._id === author?._id;
-  const isLiked = likes?.includes(user?._id);
+  const isLiked = likes?.some?.((id) => id?.toString?.() === user?._id?.toString?.());
+  const wasEdited = updatedAt && createdAt && (new Date(updatedAt) - new Date(createdAt)) > 5000;
   
   // Cap visual nesting at level 2 (0, 1, 2 = 3 levels deep visual indentation max)
   const isMaxLevel = level >= 2;
@@ -64,6 +65,9 @@ export default function CommentThread({ comment, reviewId, level = 0 }) {
                 </Link>
               )}
               <span className="text-xs text-slate-500">{formatRelativeTime(createdAt)}</span>
+              {wasEdited && !isDeleted && (
+                <span className="text-xs text-slate-600 italic">(edited)</span>
+              )}
             </div>
 
             {/* Actions Menu */}

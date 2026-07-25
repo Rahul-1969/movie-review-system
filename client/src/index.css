@@ -77,21 +77,38 @@
     @apply bg-red-600 hover:bg-red-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all duration-200 hover:scale-105 active:scale-95;
   }
 
+  .label {
+    @apply block text-sm font-medium text-slate-300 mb-1.5;
+  }
+
+  .light .label {
+    @apply text-slate-700;
+  }
+
   .card {
     @apply bg-dark-800/50 backdrop-blur-sm border border-white/5 rounded-2xl;
   }
 
+  .light .card {
+    @apply bg-white/80 border-slate-200;
+  }
+
   .glass {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl;
+    @apply bg-dark-900/80 backdrop-blur-md border border-white/10 rounded-2xl;
+  }
+
+  .light .glass {
+    @apply bg-white/90 border-black/10;
   }
 
   .input, .textarea, .select {
     @apply w-full bg-dark-800/60 border border-white/10 rounded-xl px-4 py-3 text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-200;
   }
 
-  .label {
-    @apply block text-sm font-medium text-slate-300 mb-1.5;
+  .light .input, .light .textarea, .light .select {
+    @apply bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-400;
   }
+
 
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
