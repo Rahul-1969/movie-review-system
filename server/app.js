@@ -17,6 +17,8 @@ import { authLimiter } from './middleware/rateLimiter.middleware.js';
 
 const app = express();
 
+app.set('trust proxy', 1);
+
 // ─── CORS ────────────────────────────────────────────────────────────────────
 app.use(
   cors({
