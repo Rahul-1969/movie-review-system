@@ -42,26 +42,44 @@ export default function MovieDetail() {
     enabled: isAuthenticated
   });
 
+  // Reusable scroll+highlight helper — used by both hash-change detection
+  // and the 'notification-nav' custom event (so re-clicking the same
+  // notification still replays the effect even if the hash didn't change).
+  const scrollToTarget = (targetId, delay = 300) => {
+    const timer = setTimeout(() => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.add('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
+        setTimeout(() => {
+          el.classList.remove('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
+        }, 2500);
+      }
+    }, delay);
+    return timer;
+  };
+
+  // Triggered on initial load / hash navigation
   useEffect(() => {
     if (!isLoading && data?.data) {
       const hash = window.location.hash;
       if (!hash) return;
-      
-      const targetId = hash.slice(1);
-      const timer = setTimeout(() => {
-        const el = document.getElementById(targetId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
-          setTimeout(() => {
-            el.classList.remove('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
-          }, 2500);
-        }
-      }, 300);
-
+      const timer = scrollToTarget(hash.slice(1));
       return () => clearTimeout(timer);
     }
   }, [isLoading, data, window.location.hash]);
+
+  // Triggered by NotificationBell via CustomEvent so repeat-clicks on the
+  // same notification always replay the scroll+highlight, hash or not.
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.detail?.targetId) {
+        scrollToTarget(e.detail.targetId, 100);
+      }
+    };
+    window.addEventListener('notification-nav', handler);
+    return () => window.removeEventListener('notification-nav', handler);
+  }, []);
 
   if (isLoading) return <PageLoader />;
   if (!data?.data) return (

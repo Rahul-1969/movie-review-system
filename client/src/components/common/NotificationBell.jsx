@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, CheckCheck, Trash2, X } from 'lucide-react';
 import { useNotifications, useMarkAsRead, useMarkAllAsRead, useDeleteNotification, useDeleteAllRead } from '../../hooks/useNotifications.js';
 import { formatRelativeTime } from '../../utils/formatDate.js';
@@ -9,6 +9,7 @@ export default function NotificationBell() {
   const [hoveredId, setHoveredId] = useState(null);
   const dropRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { data } = useNotifications();
   const markAsRead = useMarkAsRead();
@@ -40,13 +41,19 @@ export default function NotificationBell() {
     switch (n.type) {
       case 'review_like':
       case 'review_comment':
-        return reviewId ? `/movies/${movieId}#review-${reviewId}` : `/movies/${movieId}`;
+        return { url: `/movies/${movieId}`, hash: reviewId ? `review-${reviewId}` : null };
       case 'comment_like':
       case 'comment_reply':
-        return commentId ? `/movies/${movieId}#comment-${commentId}` : `/movies/${movieId}`;
+        return { url: `/movies/${movieId}`, hash: commentId ? `comment-${commentId}` : null };
       default:
-        return `/movies/${movieId}`;
+        return { url: `/movies/${movieId}`, hash: null };
     }
+  };
+
+  const dispatchNavEvent = (targetId, delay = 100) => {
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('notification-nav', { detail: { targetId } }));
+    }, delay);
   };
 
   const handleNotificationClick = (notification) => {
@@ -54,8 +61,22 @@ export default function NotificationBell() {
       markAsRead.mutate(notification._id);
     }
     setOpen(false);
+
     const link = buildDeepLink(notification);
-    if (link) navigate(link);
+    if (!link) return;
+
+    const targetId = link.hash;
+    const alreadyOnPage = location.pathname === link.url;
+
+    if (alreadyOnPage) {
+      // Already on this movie page — just dispatch the scroll event directly,
+      // no navigation needed (and hash wouldn't change anyway).
+      if (targetId) dispatchNavEvent(targetId, 50);
+    } else {
+      // Navigate first, then dispatch after page + reviews have loaded.
+      navigate(link.hash ? `${link.url}#${link.hash}` : link.url);
+      if (targetId) dispatchNavEvent(targetId, 600);
+    }
   };
 
   const handleDelete = (e, id) => {
@@ -66,16 +87,11 @@ export default function NotificationBell() {
   const getNotificationText = (n) => {
     const actorName = n.actor?.name || 'Someone';
     switch (n.type) {
-      case 'review_like':
-        return `${actorName} liked your review`;
-      case 'comment_like':
-        return `${actorName} liked your comment`;
-      case 'comment_reply':
-        return `${actorName} replied to your comment`;
-      case 'review_comment':
-        return `${actorName} commented on your review`;
-      default:
-        return `${actorName} interacted with your content`;
+      case 'review_like':     return `${actorName} liked your review`;
+      case 'comment_like':    return `${actorName} liked your comment`;
+      case 'comment_reply':   return `${actorName} replied to your comment`;
+      case 'review_comment':  return `${actorName} commented on your review`;
+      default:                return `${actorName} interacted with your content`;
     }
   };
 
@@ -106,7 +122,7 @@ export default function NotificationBell() {
                 </span>
               )}
             </h3>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {unreadCount > 0 && (
                 <button
                   onClick={() => markAllAsRead.mutate()}
@@ -143,13 +159,14 @@ export default function NotificationBell() {
               notifications.slice(0, 10).map((n) => (
                 <div
                   key={n._id}
-                  className="relative group"
+                  className="flex items-stretch group"
                   onMouseEnter={() => setHoveredId(n._id)}
                   onMouseLeave={() => setHoveredId(null)}
                 >
+                  {/* Main clickable row */}
                   <button
                     onClick={() => handleNotificationClick(n)}
-                    className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors hover:bg-white/5 ${
+                    className={`flex-1 min-w-0 text-left px-3.5 py-3 flex items-start gap-3 transition-colors hover:bg-white/5 ${
                       !n.isRead ? 'bg-primary-500/5' : ''
                     }`}
                   >
@@ -172,8 +189,8 @@ export default function NotificationBell() {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 pr-6">
-                      <p className={`text-xs ${!n.isRead ? 'text-white font-medium' : 'text-slate-300'}`}>
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs leading-snug ${!n.isRead ? 'text-white font-medium' : 'text-slate-300'}`}>
                         {getNotificationText(n)}
                       </p>
                       <p className="text-[11px] text-slate-500 mt-1">
@@ -186,22 +203,24 @@ export default function NotificationBell() {
                       <img
                         src={n.movie.poster.url}
                         alt={n.movie.title}
-                        className="w-7 h-10 rounded object-cover flex-shrink-0"
+                        className="w-7 h-10 rounded object-cover flex-shrink-0 self-center"
                       />
                     )}
                   </button>
 
-                  {/* Delete button — visible on hover */}
-                  {hoveredId === n._id && (
+                  {/* Delete button — dedicated column, no overlap */}
+                  <div className="flex items-center pr-1 flex-shrink-0">
                     <button
                       onClick={(e) => handleDelete(e, n._id)}
                       disabled={deleteNotification.isPending}
-                      className="absolute top-2 right-2 p-1 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors z-10"
                       title="Delete notification"
+                      className={`p-2 rounded-lg transition-all duration-150 text-slate-500 hover:text-red-400 hover:bg-red-500/10 ${
+                        hoveredId === n._id ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                      }`}
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-4 h-4" />
                     </button>
-                  )}
+                  </div>
                 </div>
               ))
             )}
