@@ -23,14 +23,23 @@
     --color-slate-100: 30 41 59;    /* slate-800 */
     --color-slate-200: 51 65 85;    /* slate-700 */
     --color-slate-300: 71 85 105;   /* slate-600 */
-    --color-slate-400: 100 116 139; /* slate-500 */
-    --color-slate-500: 148 163 184; /* slate-400 */
+    --color-slate-400: 71 85 105;   /* slate-600 — darkened for readable secondary text */
+    --color-slate-500: 100 116 139; /* slate-500 — darkened for helper/supporting text */
     
     --color-dark-50: 2 6 23;        /* slate-950 */
     --color-dark-100: 15 23 42;     /* slate-900 */
     --color-dark-800: 248 250 252;  /* slate-50  — surfaces become very light */
     --color-dark-900: 241 245 249;  /* slate-100 — panels become light gray */
     --color-dark-950: 255 255 255;  /* white     — page body becomes white */
+  }
+
+  .light .card,
+  .light .glass,
+  .light .btn-ghost,
+  .light .input,
+  .light .textarea,
+  .light .select {
+    border-color: rgba(15, 23, 42, 0.12);
   }
 
   * {
