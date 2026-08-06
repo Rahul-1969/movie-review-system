@@ -53,7 +53,7 @@ export default function MyReviews() {
               <div className="flex items-center gap-3">
                 {review.movie?.poster?.url && (
                   <img src={review.movie.poster.url} alt={review.movie.title}
-                    className="w-10 h-14 rounded object-cover" />
+                    className="w-14 h-20 rounded-lg object-cover flex-shrink-0" />
                 )}
                 <div className="flex-1">
                   <Link to={`/movies/${review.movie?._id}`}
