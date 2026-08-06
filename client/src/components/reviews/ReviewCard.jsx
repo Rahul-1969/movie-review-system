@@ -21,7 +21,11 @@ export default function ReviewCard({ review }) {
   const isOwner = user?._id === reviewer?._id;
   const isLiked = likes?.some?.((id) => id?.toString?.() === user?._id?.toString?.());
 
-  const [showComments, setShowComments] = useState(false);
+  const targetHash = typeof window !== 'undefined' ? window.location.hash : '';
+  const isCommentTarget = targetHash.startsWith('#comment-');
+  const isReviewTarget = targetHash === `#review-${_id}`;
+
+  const [showComments, setShowComments] = useState(isCommentTarget);
   const { data: comments, isLoading: isLoadingComments } = useComments(showComments ? _id : null);
 
   // Edit review state
@@ -44,7 +48,7 @@ export default function ReviewCard({ review }) {
   };
 
   return (
-    <div className={`card p-5 animate-slide-up ${isFlagged ? 'border-red-500/20' : ''}`}>
+    <div id={`review-${_id}`} className={`card p-5 animate-slide-up transition-all duration-500 ${isFlagged ? 'border-red-500/20' : ''}`}>
       {/* Header */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">

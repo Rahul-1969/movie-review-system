@@ -67,3 +67,36 @@ export const markAllAsRead = async (req, res, next) => {
     next(err);
   }
 };
+
+// DELETE /api/notifications/:id
+export const deleteNotification = async (req, res, next) => {
+  try {
+    const notification = await Notification.findById(req.params.id);
+    if (!notification) {
+      return res.status(404).json({ success: false, message: 'Notification not found' });
+    }
+
+    if (notification.recipient.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    await Notification.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Notification deleted' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// DELETE /api/notifications/read
+export const deleteAllRead = async (req, res, next) => {
+  try {
+    await Notification.deleteMany({
+      recipient: req.user._id,
+      isRead: true,
+    });
+
+    res.json({ success: true, message: 'All read notifications cleared' });
+  } catch (err) {
+    next(err);
+  }
+};

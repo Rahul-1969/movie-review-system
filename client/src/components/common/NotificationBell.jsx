@@ -1,20 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck } from 'lucide-react';
-import { useNotifications, useMarkAsRead, useMarkAllAsRead } from '../../hooks/useNotifications.js';
+import { Bell, CheckCheck, Trash2, X } from 'lucide-react';
+import { useNotifications, useMarkAsRead, useMarkAllAsRead, useDeleteNotification, useDeleteAllRead } from '../../hooks/useNotifications.js';
 import { formatRelativeTime } from '../../utils/formatDate.js';
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const [hoveredId, setHoveredId] = useState(null);
   const dropRef = useRef(null);
   const navigate = useNavigate();
 
   const { data } = useNotifications();
   const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
+  const deleteNotification = useDeleteNotification();
+  const deleteAllRead = useDeleteAllRead();
 
   const notifications = data?.data || [];
   const unreadCount = data?.unreadCount || 0;
+  const hasRead = notifications.some((n) => n.isRead);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -26,15 +30,37 @@ export default function NotificationBell() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const buildDeepLink = (n) => {
+    const movieId = n.movie?._id || n.movie;
+    if (!movieId) return null;
+
+    const reviewId = n.review?._id || n.review;
+    const commentId = n.comment?._id || n.comment;
+
+    switch (n.type) {
+      case 'review_like':
+      case 'review_comment':
+        return reviewId ? `/movies/${movieId}#review-${reviewId}` : `/movies/${movieId}`;
+      case 'comment_like':
+      case 'comment_reply':
+        return commentId ? `/movies/${movieId}#comment-${commentId}` : `/movies/${movieId}`;
+      default:
+        return `/movies/${movieId}`;
+    }
+  };
+
   const handleNotificationClick = (notification) => {
     if (!notification.isRead) {
       markAsRead.mutate(notification._id);
     }
     setOpen(false);
-    if (notification.movie?._id || notification.movie) {
-      const movieId = notification.movie._id || notification.movie;
-      navigate(`/movies/${movieId}`);
-    }
+    const link = buildDeepLink(notification);
+    if (link) navigate(link);
+  };
+
+  const handleDelete = (e, id) => {
+    e.stopPropagation();
+    deleteNotification.mutate(id);
   };
 
   const getNotificationText = (n) => {
@@ -80,16 +106,30 @@ export default function NotificationBell() {
                 </span>
               )}
             </h3>
-            {unreadCount > 0 && (
-              <button
-                onClick={() => markAllAsRead.mutate()}
-                disabled={markAllAsRead.isPending}
-                className="flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 font-medium transition-colors disabled:opacity-50"
-              >
-                <CheckCheck className="w-3.5 h-3.5" />
-                Mark all read
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
+                <button
+                  onClick={() => markAllAsRead.mutate()}
+                  disabled={markAllAsRead.isPending}
+                  className="flex items-center gap-1 text-xs text-primary-400 hover:text-primary-300 font-medium transition-colors disabled:opacity-50"
+                  title="Mark all as read"
+                >
+                  <CheckCheck className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Mark all read</span>
+                </button>
+              )}
+              {hasRead && (
+                <button
+                  onClick={() => deleteAllRead.mutate()}
+                  disabled={deleteAllRead.isPending}
+                  className="flex items-center gap-1 text-xs text-slate-500 hover:text-red-400 font-medium transition-colors disabled:opacity-50"
+                  title="Clear read notifications"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Clear read</span>
+                </button>
+              )}
+            </div>
           </div>
 
           {/* List */}
@@ -101,50 +141,68 @@ export default function NotificationBell() {
               </div>
             ) : (
               notifications.slice(0, 10).map((n) => (
-                <button
+                <div
                   key={n._id}
-                  onClick={() => handleNotificationClick(n)}
-                  className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors hover:bg-white/5 ${
-                    !n.isRead ? 'bg-primary-500/5' : ''
-                  }`}
+                  className="relative group"
+                  onMouseEnter={() => setHoveredId(n._id)}
+                  onMouseLeave={() => setHoveredId(null)}
                 >
-                  {/* Actor Avatar */}
-                  <div className="relative flex-shrink-0">
-                    {n.actor?.avatar?.url ? (
+                  <button
+                    onClick={() => handleNotificationClick(n)}
+                    className={`w-full text-left p-3.5 flex items-start gap-3 transition-colors hover:bg-white/5 ${
+                      !n.isRead ? 'bg-primary-500/5' : ''
+                    }`}
+                  >
+                    {/* Actor Avatar */}
+                    <div className="relative flex-shrink-0">
+                      {n.actor?.avatar?.url ? (
+                        <img
+                          src={n.actor.avatar.url}
+                          alt={n.actor.name}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/30 flex items-center justify-center text-xs font-bold text-primary-400">
+                          {n.actor?.name?.[0]?.toUpperCase() || '?'}
+                        </div>
+                      )}
+                      {!n.isRead && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary-500 rounded-full border-2 border-dark-900" />
+                      )}
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0 pr-6">
+                      <p className={`text-xs ${!n.isRead ? 'text-white font-medium' : 'text-slate-300'}`}>
+                        {getNotificationText(n)}
+                      </p>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        {formatRelativeTime(n.createdAt)}
+                      </p>
+                    </div>
+
+                    {/* Movie Thumbnail */}
+                    {n.movie?.poster?.url && (
                       <img
-                        src={n.actor.avatar.url}
-                        alt={n.actor.name}
-                        className="w-8 h-8 rounded-full object-cover"
+                        src={n.movie.poster.url}
+                        alt={n.movie.title}
+                        className="w-7 h-10 rounded object-cover flex-shrink-0"
                       />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-primary-500/20 border border-primary-500/30 flex items-center justify-center text-xs font-bold text-primary-400">
-                        {n.actor?.name?.[0]?.toUpperCase() || '?'}
-                      </div>
                     )}
-                    {!n.isRead && (
-                      <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-primary-500 rounded-full border-2 border-dark-900" />
-                    )}
-                  </div>
+                  </button>
 
-                  {/* Content */}
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs ${!n.isRead ? 'text-white font-medium' : 'text-slate-300'}`}>
-                      {getNotificationText(n)}
-                    </p>
-                    <p className="text-[11px] text-slate-500 mt-1">
-                      {formatRelativeTime(n.createdAt)}
-                    </p>
-                  </div>
-
-                  {/* Movie Thumbnail */}
-                  {n.movie?.poster?.url && (
-                    <img
-                      src={n.movie.poster.url}
-                      alt={n.movie.title}
-                      className="w-7 h-10 rounded object-cover flex-shrink-0"
-                    />
+                  {/* Delete button — visible on hover */}
+                  {hoveredId === n._id && (
+                    <button
+                      onClick={(e) => handleDelete(e, n._id)}
+                      disabled={deleteNotification.isPending}
+                      className="absolute top-2 right-2 p-1 rounded-md text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors z-10"
+                      title="Delete notification"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   )}
-                </button>
+                </div>
               ))
             )}
           </div>

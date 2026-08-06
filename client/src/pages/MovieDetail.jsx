@@ -42,6 +42,27 @@ export default function MovieDetail() {
     enabled: isAuthenticated
   });
 
+  useEffect(() => {
+    if (!isLoading && data?.data) {
+      const hash = window.location.hash;
+      if (!hash) return;
+      
+      const targetId = hash.slice(1);
+      const timer = setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.classList.add('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
+          setTimeout(() => {
+            el.classList.remove('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
+          }, 2500);
+        }
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [isLoading, data, window.location.hash]);
+
   if (isLoading) return <PageLoader />;
   if (!data?.data) return (
     <div className="min-h-[60vh] flex flex-col items-center justify-center">

@@ -32,7 +32,7 @@ export default function CommentThread({ comment, reviewId, level = 0 }) {
   };
 
   return (
-    <div className={`mt-4 ${level > 0 ? 'pl-4 border-l border-white/5' : ''}`}>
+    <div id={`comment-${_id}`} className={`mt-4 transition-all duration-500 rounded-xl ${level > 0 ? 'pl-4 border-l border-white/5' : ''}`}>
       <div className="flex gap-3">
         {/* Avatar */}
         <div className="shrink-0 mt-1">
