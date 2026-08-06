@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThumbsUp, Flag, Trash2, MessageCircle, Pencil, Check, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.js';
@@ -27,6 +27,22 @@ export default function ReviewCard({ review }) {
 
   const [showComments, setShowComments] = useState(isCommentTarget);
   const { data: comments, isLoading: isLoadingComments } = useComments(showComments ? _id : null);
+
+  // When a notification-nav CustomEvent fires (same-page click, no hash change),
+  // expand this review's comments if the target is a comment within it.
+  // We can't know which review the comment belongs to from the event alone,
+  // so we expand ALL cards when a comment-type target fires — the scroll will
+  // land on the correct one once it's in the DOM.
+  useEffect(() => {
+    const handler = (e) => {
+      const tid = e.detail?.targetId;
+      if (tid && tid.startsWith('comment-')) {
+        setShowComments(true);
+      }
+    };
+    window.addEventListener('notification-nav', handler);
+    return () => window.removeEventListener('notification-nav', handler);
+  }, []);
 
   // Edit review state
   const [isEditing, setIsEditing] = useState(false);

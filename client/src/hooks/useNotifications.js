@@ -8,8 +8,11 @@ export const useNotifications = () => {
   return useQuery({
     queryKey: ['notifications'],
     queryFn: () => notificationsApi.getAll().then((r) => r.data),
-    refetchInterval: 30000, // 30 seconds polling
+    refetchInterval: 30000,           // poll every 30 s
+    refetchIntervalInBackground: true, // don't pause when tab loses focus
     refetchOnWindowFocus: true,
+    staleTime: 0,                     // always treat cached data as stale so
+                                      // every interval tick hits the network
     enabled: !!isAuthenticated,
   });
 };

@@ -71,11 +71,15 @@ export default function MovieDetail() {
 
   // Triggered by NotificationBell via CustomEvent so repeat-clicks on the
   // same notification always replay the scroll+highlight, hash or not.
+  // Comment targets get a longer delay (700ms) because ReviewCard must first
+  // set showComments=true, trigger the useComments fetch, and render the
+  // CommentThread DOM before scrollIntoView can find the element.
   useEffect(() => {
     const handler = (e) => {
-      if (e.detail?.targetId) {
-        scrollToTarget(e.detail.targetId, 100);
-      }
+      const tid = e.detail?.targetId;
+      if (!tid) return;
+      const isComment = tid.startsWith('comment-');
+      scrollToTarget(tid, isComment ? 700 : 100);
     };
     window.addEventListener('notification-nav', handler);
     return () => window.removeEventListener('notification-nav', handler);
