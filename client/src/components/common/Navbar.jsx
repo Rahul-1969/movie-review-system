@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Film, Menu, X, User, LogOut, LayoutDashboard, Heart, Star, ChevronDown, Sun, Moon, ListPlus } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth.js';
 import { useTheme } from '../../context/ThemeContext.jsx';
+import NotificationBell from './NotificationBell.jsx';
 import toast from 'react-hot-toast';
 
 export default function Navbar() {
@@ -78,6 +79,8 @@ export default function Navbar() {
                 <Moon className={`absolute inset-0 w-5 h-5 transition-all duration-500 transform ${theme === 'dark' ? 'opacity-0 -rotate-90' : 'opacity-100 rotate-0'}`} />
               </div>
             </button>
+
+            {isAuthenticated && <NotificationBell />}
 
             {isAuthenticated ? (
               <div className="relative" ref={dropRef}>

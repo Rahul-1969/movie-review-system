@@ -11,6 +11,7 @@ import userRoutes from './routes/user.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import listRoutes from './routes/list.routes.js';
 import commentRoutes from './routes/comment.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 import { errorHandler } from './middleware/error.middleware.js';
 import { authLimiter } from './middleware/rateLimiter.middleware.js';
 
@@ -44,6 +45,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/lists', listRoutes);
 app.use('/api/comments', commentRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // ─── Health Check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

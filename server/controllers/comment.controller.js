@@ -1,5 +1,6 @@
 import Comment from '../models/Comment.model.js';
 import Review from '../models/Review.model.js';
+import { createNotification } from '../services/notification.service.js';
 
 export const createComment = async (req, res, next) => {
   try {
@@ -8,10 +9,11 @@ export const createComment = async (req, res, next) => {
     const review = await Review.findById(reviewId);
     if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
 
+    let parentComment = null;
     if (parentCommentId) {
-      const parent = await Comment.findById(parentCommentId);
-      if (!parent) return res.status(404).json({ success: false, message: 'Parent comment not found' });
-      if (parent.review.toString() !== reviewId) {
+      parentComment = await Comment.findById(parentCommentId);
+      if (!parentComment) return res.status(404).json({ success: false, message: 'Parent comment not found' });
+      if (parentComment.review.toString() !== reviewId) {
         return res.status(400).json({ success: false, message: 'Parent comment does not belong to this review' });
       }
     }
@@ -25,6 +27,33 @@ export const createComment = async (req, res, next) => {
 
     await Review.findByIdAndUpdate(reviewId, { $inc: { commentCount: 1 } });
     
+    // Notifications trigger
+    let replyTargetUser = null;
+    if (parentComment) {
+      replyTargetUser = parentComment.user.toString();
+      createNotification({
+        recipient: parentComment.user,
+        type: 'comment_reply',
+        actor: req.user._id,
+        review: review._id,
+        comment: comment._id,
+        movie: review.movie,
+      });
+    }
+
+    // Notify review author if not same as reply target
+    const reviewAuthor = review.user.toString();
+    if (reviewAuthor !== replyTargetUser) {
+      createNotification({
+        recipient: review.user,
+        type: 'review_comment',
+        actor: req.user._id,
+        review: review._id,
+        comment: comment._id,
+        movie: review.movie,
+      });
+    }
+
     await comment.populate('user', 'name avatar');
     res.status(201).json({ success: true, data: comment });
   } catch (err) { 
@@ -130,6 +159,16 @@ export const toggleCommentLike = async (req, res, next) => {
       comment.likes.pull(userId);
     } else {
       comment.likes.push(userId);
+      // Fetch review to get movie reference
+      const review = await Review.findById(comment.review);
+      createNotification({
+        recipient: comment.user,
+        type: 'comment_like',
+        actor: userId,
+        review: comment.review,
+        comment: comment._id,
+        movie: review?.movie,
+      });
     }
 
     await comment.save();

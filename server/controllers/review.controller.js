@@ -3,6 +3,7 @@ import Review from '../models/Review.model.js';
 import Movie from '../models/Movie.model.js';
 import { recalculateRating } from '../services/rating.service.js';
 import { deleteCache } from '../services/cache.service.js';
+import { createNotification } from '../services/notification.service.js';
 
 // ─── POST /api/reviews ────────────────────────────────────────────────────────
 export const createReview = async (req, res, next) => {
@@ -105,6 +106,13 @@ export const toggleLike = async (req, res, next) => {
       review.likes.pull(userId); // Mongoose pull handles ObjectId correctly
     } else {
       review.likes.push(userId);
+      createNotification({
+        recipient: review.user,
+        type: 'review_like',
+        actor: userId,
+        review: review._id,
+        movie: review.movie,
+      });
     }
 
     await review.save();
