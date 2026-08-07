@@ -72,6 +72,11 @@ export default function NotificationBell() {
       queryClient.invalidateQueries({ queryKey: ['movie', movieId] });
     }
 
+    const reviewId = notification.review?._id || notification.review;
+    if (reviewId) {
+      queryClient.invalidateQueries({ queryKey: ['comments', reviewId] });
+    }
+
     const targetId = link.hash;
     const alreadyOnPage = location.pathname === link.url;
 
