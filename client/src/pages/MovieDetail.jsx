@@ -4,7 +4,7 @@ import { Calendar, Globe, User, Star, Heart, Play, ArrowLeft, ListPlus, Check, P
 import { useMovie, useToggleWatchlist } from '../hooks/useMovies.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { usersApi } from '../api/users.api.js';
-import { PageLoader } from '../components/common/Loader.jsx';
+import { MovieDetailHeroSkeleton } from '../components/common/Skeleton.jsx';
 import ReviewForm from '../components/reviews/ReviewForm.jsx';
 import ReviewList from '../components/reviews/ReviewList.jsx';
 import StarRating from '../components/movies/StarRating.jsx';
@@ -12,6 +12,7 @@ import { getRatingBgColor } from '../utils/ratingHelper.js';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useMyLists, useAddToList, useRemoveFromList } from '../hooks/useLists.js';
+import PageTransition from '../components/common/PageTransition.jsx';
 
 export default function MovieDetail() {
   const { id } = useParams();
@@ -100,12 +101,14 @@ export default function MovieDetail() {
     return () => window.removeEventListener('notification-nav', handler);
   }, [scrollToTarget]);
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return <PageTransition><MovieDetailHeroSkeleton /></PageTransition>;
   if (!data?.data) return (
-    <div className="min-h-[60vh] flex flex-col items-center justify-center">
-      <p className="text-slate-400 text-xl">Movie not found</p>
-      <Link to="/" className="btn-primary mt-4">← Browse Movies</Link>
-    </div>
+    <PageTransition>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center">
+        <p className="text-slate-400 text-xl">Movie not found</p>
+        <Link to="/" className="btn-primary mt-4">← Browse Movies</Link>
+      </div>
+    </PageTransition>
   );
 
   const movie = data.data;
@@ -129,6 +132,7 @@ export default function MovieDetail() {
   const youtubeId = getYoutubeId(trailer);
 
   return (
+    <PageTransition>
     <div className="min-h-screen">
       {/* ── Back Button ─────────────────────────────────────────────────────── */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
@@ -350,5 +354,6 @@ export default function MovieDetail() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '../../api/admin.api.js';
 import AdminSidebar from '../../components/admin/AdminSidebar.jsx';
-import { PageLoader } from '../../components/common/Loader.jsx';
+import PageTransition from '../../components/common/PageTransition.jsx';
 import { monthName } from '../../utils/formatDate.js';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -29,6 +29,7 @@ export default function Analytics() {
 
   if (isLoading) {
     return (
+      <PageTransition>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex gap-8">
           <AdminSidebar />
@@ -43,6 +44,7 @@ export default function Analytics() {
           </div>
         </div>
       </div>
+      </PageTransition>
     );
   }
 
@@ -62,6 +64,7 @@ export default function Analytics() {
   const topMovies = analytics?.topMovies || [];
 
   return (
+    <PageTransition>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex gap-8">
         <AdminSidebar />
@@ -143,5 +146,6 @@ export default function Analytics() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

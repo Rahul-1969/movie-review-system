@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'framer-motion';
 import Navbar from './components/common/Navbar.jsx';
 import Footer from './components/common/Footer.jsx';
 import ProtectedRoute from './components/common/ProtectedRoute.jsx';
@@ -28,6 +29,52 @@ import ManageUsers from './pages/admin/ManageUsers.jsx';
 import ManageReviews from './pages/admin/ManageReviews.jsx';
 import Analytics from './pages/admin/Analytics.jsx';
 
+/**
+ * AnimatedRoutes — must be a child of BrowserRouter so useLocation() works.
+ * AnimatePresence needs the key on Routes to detect route changes; using
+ * location.pathname as the key means every path change triggers enter/exit.
+ */
+function AnimatedRoutes() {
+  const location = useLocation();
+
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        {/* Public */}
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/movies/:id" element={<MovieDetail />} />
+        <Route path="/users/:id" element={<PublicProfile />} />
+        <Route path="/lists/:id" element={<ListDetail />} />
+
+        {/* Protected — any authenticated user */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/my-reviews" element={<MyReviews />} />
+          <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/my-lists" element={<MyLists />} />
+        </Route>
+
+        {/* Protected — admin only */}
+        <Route element={<ProtectedRoute requiredRole="admin" />}>
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/dashboard" element={<Dashboard />} />
+          <Route path="/admin/movies" element={<ManageMovies />} />
+          <Route path="/admin/users" element={<ManageUsers />} />
+          <Route path="/admin/reviews" element={<ManageReviews />} />
+          <Route path="/admin/analytics" element={<Analytics />} />
+        </Route>
+
+        {/* 404 */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -36,38 +83,7 @@ function App() {
         <Navbar />
         <main className="flex-1">
           <ErrorBoundary>
-            <Routes>
-              {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="/movies/:id" element={<MovieDetail />} />
-            <Route path="/users/:id" element={<PublicProfile />} />
-            <Route path="/lists/:id" element={<ListDetail />} />
-
-            {/* Protected — any authenticated user */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/my-reviews" element={<MyReviews />} />
-              <Route path="/watchlist" element={<Watchlist />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/my-lists" element={<MyLists />} />
-            </Route>
-
-            {/* Protected — admin only */}
-            <Route element={<ProtectedRoute requiredRole="admin" />}>
-              <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="/admin/dashboard" element={<Dashboard />} />
-              <Route path="/admin/movies" element={<ManageMovies />} />
-              <Route path="/admin/users" element={<ManageUsers />} />
-              <Route path="/admin/reviews" element={<ManageReviews />} />
-              <Route path="/admin/analytics" element={<Analytics />} />
-            </Route>
-
-            {/* 404 */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <AnimatedRoutes />
           </ErrorBoundary>
         </main>
         <Footer />

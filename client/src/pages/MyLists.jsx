@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Lock, Globe, Film, Pencil, Trash2, X, ChevronRight } from 'lucide-react';
 import { useMyLists, useCreateList, useDeleteList, useUpdateList } from '../hooks/useLists.js';
-import { PageLoader } from '../components/common/Loader.jsx';
+import { ListCardSkeleton } from '../components/common/Skeleton.jsx';
+import PageTransition from '../components/common/PageTransition.jsx';
 
 function PosterCollage({ movies = [] }) {
   const posters = movies.slice(0, 4);
@@ -127,9 +128,25 @@ export default function MyLists() {
     deleteList.mutate(list._id, { onSuccess: () => setConfirmDelete(null) });
   };
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return (
+    <PageTransition>
+      <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="flex items-center justify-between mb-8">
+          <div className="space-y-2">
+            <div className="h-8 w-32 shimmer-bg rounded-xl" />
+            <div className="h-4 w-20 shimmer-bg rounded-lg" />
+          </div>
+          <div className="h-10 w-28 shimmer-bg rounded-xl" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {Array.from({ length: 8 }).map((_, i) => <ListCardSkeleton key={i} />)}
+        </div>
+      </div>
+    </PageTransition>
+  );
 
   return (
+    <PageTransition>
     <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
@@ -240,5 +257,6 @@ export default function MyLists() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

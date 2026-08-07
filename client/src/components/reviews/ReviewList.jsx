@@ -1,7 +1,19 @@
 import ReviewCard from './ReviewCard.jsx';
+import { ReviewCardSkeleton } from '../common/Skeleton.jsx';
 import { MessageSquare } from 'lucide-react';
 
-export default function ReviewList({ reviews }) {
+export default function ReviewList({ reviews, isLoading = false }) {
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-6 w-32 shimmer-bg rounded-xl" />
+        {[0, 1, 2].map((i) => (
+          <ReviewCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
   if (!reviews?.length) {
     return (
       <div className="text-center py-12">

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Film, User, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth.js';
 import toast from 'react-hot-toast';
+import PageTransition from '../components/common/PageTransition.jsx';
 
 export default function Register() {
   const { register } = useAuth();
@@ -40,6 +41,7 @@ export default function Register() {
   })();
 
   return (
+    <PageTransition>
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md animate-slide-up">
         <div className="text-center mb-8">
@@ -149,5 +151,6 @@ export default function Register() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

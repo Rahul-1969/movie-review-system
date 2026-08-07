@@ -4,7 +4,8 @@ import { Lock, Globe, ArrowLeft, Pencil, Trash2, X, Minus } from 'lucide-react';
 import { useList, useUpdateList, useDeleteList, useRemoveFromList } from '../hooks/useLists.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { useNavigate } from 'react-router-dom';
-import { PageLoader } from '../components/common/Loader.jsx';
+import { MovieCardSkeleton } from '../components/common/Skeleton.jsx';
+import PageTransition from '../components/common/PageTransition.jsx';
 import MovieCard from '../components/movies/MovieCard.jsx';
 import { getRatingBgColor } from '../utils/ratingHelper.js';
 
@@ -56,26 +57,50 @@ export default function ListDetail() {
   const [showEdit, setShowEdit] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return (
+    <PageTransition>
+      <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="h-4 w-24 shimmer-bg rounded mb-8" />
+        <div className="card p-6 mb-8">
+          <div className="flex items-start gap-5">
+            <div className="w-12 h-12 shimmer-bg rounded-full shrink-0" />
+            <div className="flex-1 space-y-3">
+              <div className="h-8 w-64 shimmer-bg rounded-xl" />
+              <div className="h-4 w-32 shimmer-bg rounded" />
+              <div className="h-3 w-full max-w-md shimmer-bg rounded" />
+              <div className="h-3 w-16 shimmer-bg rounded" />
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          {Array.from({ length: 12 }).map((_, i) => <MovieCardSkeleton key={i} />)}
+        </div>
+      </div>
+    </PageTransition>
+  );
 
   // Private list forbidden
   if (error?.response?.status === 403 || data?.message === 'This list is private') {
     return (
+      <PageTransition>
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
         <Lock className="w-12 h-12 text-slate-500" />
         <h2 className="text-xl font-bold text-slate-300">This list is private</h2>
         <p className="text-slate-500 text-sm">Only the owner can view this list.</p>
         <Link to="/" className="btn-ghost text-sm mt-2">← Back to Browse</Link>
       </div>
+      </PageTransition>
     );
   }
 
   if (!data?.data) {
     return (
+      <PageTransition>
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
         <h2 className="text-xl font-bold text-slate-300">List not found</h2>
         <Link to="/" className="btn-ghost text-sm">← Back to Browse</Link>
       </div>
+      </PageTransition>
     );
   }
 
@@ -96,6 +121,7 @@ export default function ListDetail() {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       {/* Back */}
       <Link to="/my-lists" className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors text-sm mb-8">
@@ -196,5 +222,6 @@ export default function ListDetail() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

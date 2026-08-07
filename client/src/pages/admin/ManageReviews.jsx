@@ -7,6 +7,7 @@ import { Flag, Trash2, ChevronLeft, ChevronRight, MessageSquare } from 'lucide-r
 import { formatRelativeTime } from '../../utils/formatDate.js';
 import { getRatingBgColor } from '../../utils/ratingHelper.js';
 import toast from 'react-hot-toast';
+import PageTransition from '../../components/common/PageTransition.jsx';
 
 export default function ManageReviews() {
   const [page, setPage] = useState(1);
@@ -37,6 +38,7 @@ export default function ManageReviews() {
   const pagination = data?.pagination;
 
   return (
+    <PageTransition>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex gap-8">
         <AdminSidebar />
@@ -104,5 +106,6 @@ export default function ManageReviews() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

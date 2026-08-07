@@ -5,6 +5,7 @@ import AdminSidebar from '../../components/admin/AdminSidebar.jsx';
 import MovieTable from '../../components/admin/MovieTable.jsx';
 import { Plus, X, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageTransition from '../../components/common/PageTransition.jsx';
 
 function MovieModal({ movie, onClose, onSave }) {
   const [form, setForm] = useState({
@@ -144,6 +145,7 @@ export default function ManageMovies() {
   };
 
   return (
+    <PageTransition>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex gap-8">
         <AdminSidebar />
@@ -188,5 +190,6 @@ export default function ManageMovies() {
         />
       )}
     </div>
+    </PageTransition>
   );
 }

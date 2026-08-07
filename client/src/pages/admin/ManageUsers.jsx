@@ -6,6 +6,7 @@ import UserTable from '../../components/admin/UserTable.jsx';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PageTransition from '../../components/common/PageTransition.jsx';
 
 export default function ManageUsers() {
   const [page, setPage] = useState(1);
@@ -31,6 +32,7 @@ export default function ManageUsers() {
   const pagination = data?.pagination;
 
   return (
+    <PageTransition>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex gap-8">
         <AdminSidebar />
@@ -74,5 +76,6 @@ export default function ManageUsers() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

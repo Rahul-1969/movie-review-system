@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Star, Pencil, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useMyReviews, useDeleteReview, useUpdateReview } from '../hooks/useReviews.js';
-import { PageLoader } from '../components/common/Loader.jsx';
+import { MyReviewSkeleton } from '../components/common/Skeleton.jsx';
+import PageTransition from '../components/common/PageTransition.jsx';
 import { formatRelativeTime } from '../utils/formatDate.js';
 import { getRatingBgColor } from '../utils/ratingHelper.js';
 import StarRating from '../components/movies/StarRating.jsx';
@@ -19,7 +20,19 @@ export default function MyReviews() {
   const reviews = data?.data || [];
   const pagination = data?.pagination;
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return (
+    <PageTransition>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="mb-8 space-y-2">
+          <div className="h-9 w-40 shimmer-bg rounded-xl" />
+          <div className="h-4 w-32 shimmer-bg rounded-lg" />
+        </div>
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => <MyReviewSkeleton key={i} />)}
+        </div>
+      </div>
+    </PageTransition>
+  );
 
   const startEdit = (review) => {
     setEditingId(review._id);
@@ -32,6 +45,7 @@ export default function MyReviews() {
   };
 
   return (
+    <PageTransition>
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="mb-8">
         <h1 className="text-3xl font-display font-bold text-white">My Reviews</h1>
@@ -122,5 +136,6 @@ export default function MyReviews() {
         </div>
       )}
     </div>
+    </PageTransition>
   );
 }

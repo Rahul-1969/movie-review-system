@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Bell, CheckCheck, Trash2, X } from 'lucide-react';
 import { useNotifications, useMarkAsRead, useMarkAllAsRead, useDeleteNotification, useDeleteAllRead } from '../../hooks/useNotifications.js';
 import { formatRelativeTime } from '../../utils/formatDate.js';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function NotificationBell() {
   const [open, setOpen] = useState(false);
@@ -10,6 +11,7 @@ export default function NotificationBell() {
   const dropRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const { data } = useNotifications();
   const markAsRead = useMarkAsRead();
@@ -64,6 +66,11 @@ export default function NotificationBell() {
 
     const link = buildDeepLink(notification);
     if (!link) return;
+
+    const movieId = notification.movie?._id || notification.movie;
+    if (movieId) {
+      queryClient.invalidateQueries({ queryKey: ['movie', movieId] });
+    }
 
     const targetId = link.hash;
     const alreadyOnPage = location.pathname === link.url;

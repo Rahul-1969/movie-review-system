@@ -2,7 +2,8 @@ import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '../../api/admin.api.js';
 import AdminSidebar from '../../components/admin/AdminSidebar.jsx';
 import StatsCard from '../../components/admin/StatsCard.jsx';
-import { PageLoader } from '../../components/common/Loader.jsx';
+import { AdminStatsCardSkeleton } from '../../components/common/Skeleton.jsx';
+import PageTransition from '../../components/common/PageTransition.jsx';
 import { Users, Film, MessageSquare, Star, LayoutDashboard, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -12,7 +13,37 @@ export default function Dashboard() {
     queryFn: () => adminApi.getStats().then((r) => r.data),
   });
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return (
+    <PageTransition>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex gap-8">
+          <AdminSidebar />
+          <div className="flex-1 space-y-8">
+            <div className="space-y-2">
+              <div className="h-9 w-40 shimmer-bg rounded-xl" />
+              <div className="h-4 w-56 shimmer-bg rounded-lg" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => <AdminStatsCardSkeleton key={i} />)}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="card p-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 shimmer-bg rounded-xl" />
+                    <div className="space-y-2 flex-1">
+                      <div className="h-4 w-32 shimmer-bg rounded" />
+                      <div className="h-3 w-48 shimmer-bg rounded" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </PageTransition>
+  );
 
   const stats = data?.data;
 
@@ -31,6 +62,7 @@ export default function Dashboard() {
   ];
 
   return (
+    <PageTransition>
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="flex gap-8">
         <AdminSidebar />
@@ -73,5 +105,6 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
+    </PageTransition>
   );
 }

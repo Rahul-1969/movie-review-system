@@ -2,7 +2,8 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '../api/users.api.js';
 import { useAuth } from '../hooks/useAuth.js';
-import { PageLoader } from '../components/common/Loader.jsx';
+import { Skeleton } from '../components/common/Skeleton.jsx';
+import PageTransition from '../components/common/PageTransition.jsx';
 import { Camera, Save, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatDate } from '../utils/formatDate.js';
@@ -29,7 +30,29 @@ export default function Profile() {
     onError: (err) => toast.error(err.response?.data?.message || 'Update failed'),
   });
 
-  if (isLoading) return <PageLoader />;
+  if (isLoading) return (
+    <PageTransition>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <Skeleton className="h-9 w-36 mb-8" />
+        <div className="card p-8 space-y-8">
+          <div className="flex flex-col items-center gap-4">
+            <Skeleton className="w-24 h-24 rounded-full" />
+            <div className="text-center space-y-2">
+              <Skeleton className="h-5 w-32 mx-auto" />
+              <Skeleton className="h-4 w-48 mx-auto" />
+              <Skeleton className="h-3 w-40 mx-auto" />
+            </div>
+          </div>
+          <div className="space-y-4">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    </PageTransition>
+  );
 
   const profile = data?.data;
 
@@ -52,6 +75,7 @@ export default function Profile() {
   const avatarUrl = preview || profile?.avatar?.url;
 
   return (
+    <PageTransition>
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-display font-bold text-white mb-8">My Profile</h1>
 
@@ -129,5 +153,6 @@ export default function Profile() {
         </form>
       </div>
     </div>
+    </PageTransition>
   );
 }
