@@ -11,8 +11,13 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
+      // 2-minute default staleTime — long enough to avoid redundant refetches
+      // for stable data, short enough that notifications (staleTime: 0) and
+      // movie detail (refetchOnWindowFocus: true) behave correctly.
+      // NOTE: refetchOnWindowFocus is intentionally left at its TanStack Query
+      // default (true) so that per-query overrides (e.g. useNotifications sets
+      // refetchOnWindowFocus: true) are not silently overridden by a global false.
+      staleTime: 1000 * 60 * 2, // 2 minutes
     },
   },
 });

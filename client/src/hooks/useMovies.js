@@ -23,11 +23,17 @@ export const useInfiniteMovies = (params) => {
   });
 };
 
-export const useMovie = (id) => {
+export const useMovie = (id, isTyping = false) => {
   return useQuery({
     queryKey: ['movie', id],
     queryFn: () => moviesApi.getById(id).then((r) => r.data),
     enabled: !!id,
+    // Lightweight polling: refreshes movie data (reviews, comments, likes)
+    // every 60 seconds while the page is open, or immediately on tab focus.
+    // Interval is paused while the user is actively typing in a form so
+    // a background refetch doesn't cause any jarring UI behaviour.
+    refetchInterval: isTyping ? false : 60000,
+    refetchOnWindowFocus: true,
   });
 };
 

@@ -89,6 +89,7 @@ export const useToggleCommentLike = () => {
     },
     onError: (err, { reviewId }, context) => {
       qc.setQueryData(['comments', reviewId], context.prev);
+      console.error('[useToggleCommentLike] Failed to toggle comment like:', err);
       toast.error(err.response?.data?.message || 'Failed to toggle like');
     },
     onSettled: (_, __, { reviewId }) => {

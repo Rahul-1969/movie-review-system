@@ -9,13 +9,18 @@ import ReviewForm from '../components/reviews/ReviewForm.jsx';
 import ReviewList from '../components/reviews/ReviewList.jsx';
 import StarRating from '../components/movies/StarRating.jsx';
 import { getRatingBgColor } from '../utils/ratingHelper.js';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { useMyLists, useAddToList, useRemoveFromList } from '../hooks/useLists.js';
 
 export default function MovieDetail() {
   const { id } = useParams();
-  const { data, isLoading, refetch } = useMovie(id);
+  // isTyping: true while the user has focus inside a review/comment input;
+  // used to pause the 60s background refetch so a mid-typing refetch doesn't
+  // cause any jarring UI jump (React Query won't reset local form state, but
+  // pausing is a clean UX courtesy).
+  const [isTyping, setIsTyping] = useState(false);
+  const { data, isLoading, refetch } = useMovie(id, isTyping);
   const { user, isAuthenticated } = useAuth();
   const [watchlistLoading, setWatchlistLoading] = useState(false);
 
@@ -42,48 +47,58 @@ export default function MovieDetail() {
     enabled: isAuthenticated
   });
 
-  // Reusable scroll+highlight helper — used by both hash-change detection
-  // and the 'notification-nav' custom event (so re-clicking the same
-  // notification still replays the effect even if the hash didn't change).
-  const scrollToTarget = (targetId, delay = 300) => {
-    const timer = setTimeout(() => {
+  // ── BUG 1 FIX: poll for element existence instead of a fixed delay ────────
+  // Polls every 100ms for up to 2000ms, then scrolls+highlights once found.
+  // Returns a cleanup function that cancels the interval.
+  const scrollToTarget = useCallback((targetId) => {
+    let elapsed = 0;
+    const INTERVAL = 100;
+    const MAX_WAIT = 2000;
+    const interval = setInterval(() => {
       const el = document.getElementById(targetId);
       if (el) {
+        clearInterval(interval);
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         el.classList.add('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
         setTimeout(() => {
           el.classList.remove('ring-2', 'ring-primary-500', 'ring-offset-2', 'ring-offset-dark-950');
         }, 2500);
+      } else {
+        elapsed += INTERVAL;
+        if (elapsed >= MAX_WAIT) clearInterval(interval);
       }
-    }, delay);
-    return timer;
-  };
+    }, INTERVAL);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Triggered on initial load / hash navigation
+  // ── BUG 2 FIX: guard with a ref so the hash-scroll only fires once per   ──
+  // page load. Without this guard, every data re-render (e.g. after posting  
+  // a comment causes query invalidation) would re-fire this effect with the  
+  // same window.location.hash still present, re-applying the highlight ring  
+  // to the already-scrolled element.
+  const hasScrolledRef = useRef(false);
   useEffect(() => {
-    if (!isLoading && data?.data) {
+    if (!isLoading && data?.data && !hasScrolledRef.current) {
       const hash = window.location.hash;
       if (!hash) return;
-      const timer = scrollToTarget(hash.slice(1));
-      return () => clearTimeout(timer);
+      hasScrolledRef.current = true;
+      const cleanup = scrollToTarget(hash.slice(1));
+      return cleanup;
     }
-  }, [isLoading, data, window.location.hash]);
+  }, [isLoading, data, scrollToTarget]);
 
   // Triggered by NotificationBell via CustomEvent so repeat-clicks on the
   // same notification always replay the scroll+highlight, hash or not.
-  // Comment targets get a longer delay (700ms) because ReviewCard must first
-  // set showComments=true, trigger the useComments fetch, and render the
-  // CommentThread DOM before scrollIntoView can find the element.
+  // scrollToTarget now polls internally — no need to pass a delay hint.
   useEffect(() => {
     const handler = (e) => {
       const tid = e.detail?.targetId;
       if (!tid) return;
-      const isComment = tid.startsWith('comment-');
-      scrollToTarget(tid, isComment ? 700 : 100);
+      scrollToTarget(tid);
     };
     window.addEventListener('notification-nav', handler);
     return () => window.removeEventListener('notification-nav', handler);
-  }, []);
+  }, [scrollToTarget]);
 
   if (isLoading) return <PageLoader />;
   if (!data?.data) return (
@@ -310,7 +325,11 @@ export default function MovieDetail() {
       {/* ── Reviews Section ──────────────────────────────────────────────────── */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
         {isAuthenticated && !hasReviewed && (
-          <ReviewForm movieId={id} onSuccess={refetch} />
+          // onFocus/onBlur propagate from all child inputs/textareas via
+          // event bubbling, pausing the 60s movie refetch while user is typing.
+          <div onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)}>
+            <ReviewForm movieId={id} onSuccess={refetch} />
+          </div>
         )}
 
         {isAuthenticated && hasReviewed && (
@@ -325,7 +344,10 @@ export default function MovieDetail() {
           </div>
         )}
 
-        <ReviewList reviews={reviews ?? []} />
+        {/* onFocus/onBlur bubble up from any comment textarea within ReviewList */}
+        <div onFocus={() => setIsTyping(true)} onBlur={() => setIsTyping(false)}>
+          <ReviewList reviews={reviews ?? []} />
+        </div>
       </div>
     </div>
   );

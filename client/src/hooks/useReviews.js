@@ -94,6 +94,7 @@ export const useToggleLike = () => {
           queryClient.setQueryData(queryKey, data);
         });
       }
+      console.error('[useToggleLike] Failed to toggle review like:', err);
       toast.error(err.response?.data?.message || 'Failed to toggle like');
     },
     onSettled: () => {
