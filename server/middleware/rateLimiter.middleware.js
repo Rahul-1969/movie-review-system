@@ -6,6 +6,8 @@ import rateLimit from 'express-rate-limit';
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10,
+  skipSuccessfulRequests: true,
+  skip: () => process.env.NODE_ENV !== 'production',
   message: {
     success: false,
     message: 'Too many auth attempts. Please try again in 15 minutes.',

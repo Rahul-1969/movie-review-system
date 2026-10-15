@@ -5,7 +5,10 @@ const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 // For general caching (cache.service.js)
 export const redisClient = new Redis(REDIS_URL, {
   lazyConnect: true,
-  retryStrategy: (times) => Math.min(times * 100, 3000),
+  enableOfflineQueue: false,
+  maxRetriesPerRequest: 1,
+  connectTimeout: 5000,
+  retryStrategy: (times) => Math.min(times * 500, 5000),
 });
 
 // For BullMQ only (emailQueue.js + emailWorker.js)
@@ -17,7 +20,7 @@ export const bullRedisClient = new Redis(REDIS_URL, {
 });
 
 redisClient.on('connect', () => console.log('Redis (cache) connected'));
-redisClient.on('error', (err) => console.error('Redis error:', err.message));
+redisClient.on('error', (err) => console.warn('Redis error (caching disabled):', err.message));
 
 redisClient.connect().catch((err) =>
   console.warn('Redis unavailable — caching disabled:', err.message)
