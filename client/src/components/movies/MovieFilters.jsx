@@ -10,9 +10,19 @@ const SORT_OPTIONS = [
   { value: 'title', label: 'A–Z' },
 ];
 
-export default function MovieFilters({ filters, onChange }) {
+export default function MovieFilters({ filters, onChange, onSearchSubmit }) {
   const update = (key, value) => onChange({ ...filters, [key]: value, page: 1 });
   const clear = () => onChange({ page: 1, limit: 20 });
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      const query = (filters.search || '').trim();
+      if (query && onSearchSubmit) {
+        e.preventDefault();
+        onSearchSubmit(query);
+      }
+    }
+  };
 
   const hasFilters = filters.search || filters.genre || filters.year || filters.language || filters.minRating;
 
@@ -24,9 +34,10 @@ export default function MovieFilters({ filters, onChange }) {
         <input
           id="movie-search"
           type="text"
-          placeholder="Search movies..."
+          placeholder="Search movies... (press Enter for dedicated search)"
           value={filters.search || ''}
           onChange={(e) => update('search', e.target.value)}
+          onKeyDown={handleKeyDown}
           className="input pl-11 pr-4"
         />
       </div>

@@ -1,6 +1,6 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Calendar, Globe, User, Star, Heart, Play, ArrowLeft, ListPlus, Check, Plus } from 'lucide-react';
+import { Calendar, Globe, User, Star, Heart, Play, ArrowLeft, ListPlus, Check, Plus, Film } from 'lucide-react';
 import { useMovie, useToggleWatchlist } from '../hooks/useMovies.js';
 import { useAuth } from '../hooks/useAuth.js';
 import { usersApi } from '../api/users.api.js';
@@ -23,7 +23,11 @@ export default function MovieDetail() {
   const [isTyping, setIsTyping] = useState(false);
   const { data, isLoading, refetch } = useMovie(id, isTyping);
   const { user, isAuthenticated } = useAuth();
-  const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [id]);
 
   const toggleWatchlist = useToggleWatchlist();
   const { data: myListsData } = useMyLists();
@@ -117,10 +121,20 @@ export default function MovieDetail() {
 
   const hasReviewed = (reviews ?? []).some((r) => r.user?._id === user?._id);
 
-  const isInWatchlist = (watchlistData?.data ?? watchlistData ?? []).some?.(m => m._id === id);
+  const rawWatchlist = Array.isArray(watchlistData?.data)
+    ? watchlistData.data
+    : (Array.isArray(watchlistData) ? watchlistData : []);
+  const isInWatchlist = rawWatchlist.some((m) => {
+    if (!m || !id) return false;
+    const targetId = String(id);
+    if (typeof m === 'string') return m === targetId;
+    const movieId = m._id || m.id || m;
+    return String(movieId) === targetId;
+  });
 
   const handleWatchlist = () => {
     if (!isAuthenticated) return toast.error('Please log in first');
+    if (!id) return;
     toggleWatchlist.mutate(id);
   };
 
@@ -130,6 +144,7 @@ export default function MovieDetail() {
     return match?.[1];
   };
   const youtubeId = getYoutubeId(trailer);
+  const posterUrl = !imageError && poster?.url?.trim() ? poster.url.trim() : null;
 
   return (
     <PageTransition>
@@ -143,20 +158,31 @@ export default function MovieDetail() {
 
       {/* ── Hero ────────────────────────────────────────────────────────────── */}
       <div className="relative">
-        {poster?.url && (
-          <div className="absolute inset-0 overflow-hidden opacity-20">
-            <img src={poster.url} alt="" className="w-full h-full object-cover blur-3xl scale-110" />
+        {posterUrl && (
+          <div className="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
+            <img src={posterUrl} alt="" className="w-full h-full object-cover blur-3xl scale-110" />
           </div>
         )}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
           <div className="flex flex-col md:flex-row gap-8">
             {/* Poster */}
             <div className="shrink-0">
-              <div className="w-56 md:w-64 rounded-2xl overflow-hidden shadow-2xl shadow-black/40 ring-1 ring-white/10">
-                {poster?.url ? (
-                  <img src={poster.url} alt={title} className="w-full aspect-[2/3] object-cover" />
+              <div className="w-56 md:w-64 rounded-2xl overflow-hidden shadow-2xl shadow-black/40 ring-1 ring-white/10 relative aspect-[2/3] bg-dark-800">
+                {posterUrl ? (
+                  <img
+                    src={posterUrl}
+                    alt={title}
+                    onError={() => setImageError(true)}
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className="w-full aspect-[2/3] bg-dark-800 flex items-center justify-center text-6xl">🎬</div>
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-dark-800 via-dark-850 to-dark-900 p-6 text-center border border-white/5 select-none">
+                    <div className="w-16 h-16 rounded-2xl bg-primary-500/10 border border-primary-500/20 flex items-center justify-center text-primary-400 mb-3 shadow-lg shadow-black/40">
+                      <Film className="w-8 h-8" />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-300 line-clamp-3 mb-1">{title}</span>
+                    <span className="text-xs uppercase tracking-wider text-slate-500 font-medium">No Poster Available</span>
+                  </div>
                 )}
               </div>
             </div>

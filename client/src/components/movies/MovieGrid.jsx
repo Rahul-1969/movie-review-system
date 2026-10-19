@@ -12,7 +12,9 @@ export default function MovieGrid({ movies, loading, emptyMessage = 'No movies f
     );
   }
 
-  if (!movies?.length) {
+  const validMovies = (movies || []).filter(Boolean);
+
+  if (!validMovies.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <span className="text-6xl mb-4">🎬</span>
@@ -23,8 +25,8 @@ export default function MovieGrid({ movies, loading, emptyMessage = 'No movies f
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 animate-fade-in">
-      {movies.map((movie) => (
-        <MovieCard key={movie._id} movie={movie} />
+      {validMovies.map((movie) => (
+        <MovieCard key={movie._id || movie.id} movie={movie} />
       ))}
     </div>
   );

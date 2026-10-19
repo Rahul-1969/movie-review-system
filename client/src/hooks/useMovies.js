@@ -11,15 +11,18 @@ export const useMovies = (params) => {
   });
 };
 
-export const useInfiniteMovies = (params) => {
+export const useInfiniteMovies = (params, options = {}) => {
+  const { enabled, ...restOptions } = options;
   return useInfiniteQuery({
     queryKey: ['movies', 'infinite', params],
-    queryFn: ({ pageParam = 1 }) => moviesApi.getAll({ ...params, page: pageParam }).then((r) => r.data),
+    queryFn: ({ pageParam = 1 }) => moviesApi.getAll({ ...(params || {}), page: pageParam }).then((r) => r.data),
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      const { page, pages } = lastPage.pagination;
-      return page < pages ? page + 1 : undefined;
+      const { page, pages } = lastPage?.pagination || {};
+      return page && pages && page < pages ? page + 1 : undefined;
     },
+    enabled: enabled !== undefined ? Boolean(enabled) : Boolean(params),
+    ...restOptions,
   });
 };
 
@@ -99,46 +102,95 @@ export const useDeleteMovie = () => {
   });
 };
 
+// Helper for robust ID comparison across string, ObjectId, and populated objects
+const matchesMovieId = (item, targetId) => {
+  if (!item || !targetId) return false;
+  const targetStr = String(targetId?._id || targetId?.id || targetId);
+  if (typeof item === 'string') return item === targetStr;
+  const itemId = item._id || item.id || item;
+  return String(itemId) === targetStr;
+};
+
 export const useToggleWatchlist = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
     mutationFn: (id) => usersApi.toggleWatchlist(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries({ queryKey: ['movie', id] });
-      await queryClient.cancelQueries({ queryKey: ['watchlist'] });
+      let previousMovie;
+      let previousWatchlist;
 
-      const previousMovie = queryClient.getQueryData(['movie', id]);
-      const previousWatchlist = queryClient.getQueryData(['watchlist']);
+      try {
+        await queryClient.cancelQueries({ queryKey: ['movie', id] });
+        await queryClient.cancelQueries({ queryKey: ['watchlist'] });
 
-      // Optimistically update watchlist query
-      if (previousWatchlist) {
+        previousMovie = queryClient.getQueryData(['movie', id]);
+        previousWatchlist = queryClient.getQueryData(['watchlist']);
+
+        // Resolve movie metadata from cache if available for rich optimistic rendering
+        const movieObj = (previousMovie && typeof previousMovie === 'object' && 'data' in previousMovie)
+          ? previousMovie.data
+          : previousMovie;
+        const movieDetails = (movieObj && matchesMovieId(movieObj, id))
+          ? { ...movieObj, _id: movieObj._id || id, id: movieObj.id || id }
+          : { _id: id, id };
+
+        // Optimistically update watchlist query (handles initialized and uninitialized cache)
         queryClient.setQueryData(['watchlist'], (old) => {
-          if (!old) return old;
-          const exists = old.some(m => m._id === id);
-          if (exists) {
-            return old.filter(m => m._id !== id);
-          } else {
-            // Ideally we'd have the full movie object, but we only have ID. 
-            // The UI usually only checks if it exists, so adding a minimal object works for the includes/some check.
-            return [...old, { _id: id }];
+          if (!old) {
+            return { success: true, data: [movieDetails] };
           }
+          const isEnvelope = Boolean(old && typeof old === 'object' && Array.isArray(old.data));
+          const isDirectArray = Array.isArray(old);
+
+          // Preserve unrecognized cache structures and log a warning
+          if (!isEnvelope && !isDirectArray) {
+            console.warn('Unexpected watchlist cache structure encountered; preserving existing cache:', old);
+            return old;
+          }
+
+          const list = isEnvelope ? old.data : old;
+          const validList = list.filter(Boolean);
+          const exists = validList.some((m) => matchesMovieId(m, id));
+
+          let updatedList;
+          if (exists) {
+            updatedList = validList.filter((m) => !matchesMovieId(m, id));
+          } else {
+            updatedList = [...validList, movieDetails];
+          }
+
+          return isEnvelope ? { ...old, data: updatedList } : updatedList;
         });
+      } catch (mutateErr) {
+        console.warn('Optimistic watchlist update failed, proceeding with server mutation:', mutateErr);
       }
 
       return { previousMovie, previousWatchlist };
     },
-    onError: (err, id, context) => {
-      if (context?.previousMovie) {
-        queryClient.setQueryData(['movie', id], context.previousMovie);
+    onSuccess: (res) => {
+      if (res?.data?.message) {
+        toast.success(res.data.message);
       }
-      if (context?.previousWatchlist) {
-        queryClient.setQueryData(['watchlist'], context.previousWatchlist);
-      }
-      toast.error(err.response?.data?.message || 'Failed to update watchlist');
     },
-    onSettled: (data, error, id) => {
-      queryClient.invalidateQueries({ queryKey: ['movie', id] });
+    onError: (err, id, context) => {
+      if (context && 'previousMovie' in context) {
+        if (context.previousMovie !== undefined) {
+          queryClient.setQueryData(['movie', id], context.previousMovie);
+        } else {
+          queryClient.removeQueries({ queryKey: ['movie', id] });
+        }
+      }
+      if (context && 'previousWatchlist' in context) {
+        if (context.previousWatchlist !== undefined) {
+          queryClient.setQueryData(['watchlist'], context.previousWatchlist);
+        } else {
+          queryClient.removeQueries({ queryKey: ['watchlist'] });
+        }
+      }
+      toast.error(err?.response?.data?.message || 'Failed to update watchlist');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['watchlist'] });
     },
   });

@@ -7,12 +7,13 @@ import { Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function Watchlist() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['watchlist'],
     queryFn: () => usersApi.getWatchlist().then((r) => r.data),
   });
 
-  const movies = data?.data || [];
+  const rawList = Array.isArray(data?.data) ? data.data : (Array.isArray(data) ? data : []);
+  const movies = rawList.filter((m) => Boolean(m && typeof m === 'object' && (m._id || m.id)));
 
   if (isLoading) return (
     <PageTransition>
@@ -26,6 +27,19 @@ export default function Watchlist() {
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {Array.from({ length: 12 }).map((_, i) => <MovieCardSkeleton key={i} />)}
+        </div>
+      </div>
+    </PageTransition>
+  );
+
+  if (isError) return (
+    <PageTransition>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="card p-12 text-center max-w-lg mx-auto space-y-4 border border-red-500/20 bg-red-500/5">
+          <p className="text-red-400 font-medium">Failed to load your watchlist.</p>
+          <button onClick={() => refetch()} className="btn-primary text-sm py-2 px-4">
+            Retry
+          </button>
         </div>
       </div>
     </PageTransition>

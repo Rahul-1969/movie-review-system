@@ -57,7 +57,8 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.post('/api/auth/refresh-token', {}, { withCredentials: true });
+        const baseURL = import.meta.env.VITE_API_URL || '/api';
+        const res = await axios.post(`${baseURL}/auth/refresh-token`, {}, { withCredentials: true });
         const { accessToken } = res.data.data;
         _accessToken = accessToken; // update in-memory token
         processQueue(null, accessToken);
