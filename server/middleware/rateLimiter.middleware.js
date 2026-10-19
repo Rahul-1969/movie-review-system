@@ -24,6 +24,7 @@ export const reviewLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
   keyGenerator: (req) => req.user?.id || req.ip,
+  skip: () => process.env.NODE_ENV !== 'production',
   message: {
     success: false,
     message: 'Review limit reached. You can submit up to 5 reviews per hour.',

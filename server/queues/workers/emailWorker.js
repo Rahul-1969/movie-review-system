@@ -43,8 +43,30 @@ emailWorker.on('failed', (job, err) => {
   console.error(`❌ Email job failed: ${job?.name} (id: ${job?.id})`, err.message);
 });
 
-emailWorker.on('error', (err) => {
-  console.error('Worker error:', err);
+let hasLoggedWorkerError = false;
+
+emailWorker.on('ready', () => {
+  hasLoggedWorkerError = false;
+  console.log('🚀 Email worker ready and listening for jobs...');
 });
+
+emailWorker.on('error', (err) => {
+  if (!hasLoggedWorkerError) {
+    console.warn('BullMQ Worker Redis unavailable:', err.message);
+    hasLoggedWorkerError = true;
+  }
+});
+
+const handleWorkerShutdown = async (signal) => {
+  console.log(`\n${signal} received — closing email worker...`);
+  try {
+    await emailWorker.close();
+    console.log('Email worker closed');
+  } catch (_) { /* ignore */ }
+  process.exit(0);
+};
+
+process.on('SIGTERM', () => handleWorkerShutdown('SIGTERM'));
+process.on('SIGINT', () => handleWorkerShutdown('SIGINT'));
 
 console.log('🚀 Email worker started and listening for jobs...');

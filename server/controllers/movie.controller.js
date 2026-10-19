@@ -22,13 +22,30 @@ export const getMovies = async (req, res, next) => {
       language,
       minRating,
       search,
+      searchMode = 'title',
       sort = '-createdAt',
     } = req.query;
 
     const query = { isPublished: true };
 
     if (search) {
-      query.$text = { $search: search };
+      const trimmed = search.trim();
+      if (trimmed) {
+        const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+        const regex = new RegExp(escaped, 'i');
+        if (searchMode === 'all') {
+          query.$or = [
+            { title: regex },
+            { director: regex },
+            { description: regex },
+          ];
+        } else if (searchMode === 'director') {
+          query.director = regex;
+        } else {
+          // Default: title-only substring matching
+          query.title = regex;
+        }
+      }
     }
     if (genre) {
       const genreDoc = await Genre.findOne({ slug: genre });
@@ -112,8 +129,45 @@ export const getTrending = async (req, res, next) => {
       },
       { $unwind: '$movie' },
       { $match: { 'movie.isPublished': true } },
-      { $replaceRoot: { newRoot: { $mergeObjects: ['$movie', { recentReviews: '$reviewCount' }] } } },
+      {
+        $lookup: {
+          from: 'genres',
+          localField: 'movie.genres',
+          foreignField: '_id',
+          as: 'movieGenres',
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: [
+              '$movie',
+              { recentReviews: '$reviewCount', genres: '$movieGenres' },
+            ],
+          },
+        },
+      },
     ]);
+
+    if (trending.length === 0) {
+      // Fallback: When no reviews exist in the last 7 days, fall back to top-rated movies
+      const topRatedFallback = await Movie.find({ isPublished: true, totalReviews: { $gt: 0 } })
+        .populate('genres', 'name slug')
+        .sort({ averageRating: -1, totalReviews: -1 })
+        .limit(10)
+        .lean();
+
+      const fallbackMovies = topRatedFallback.length > 0
+        ? topRatedFallback
+        : await Movie.find({ isPublished: true })
+            .populate('genres', 'name slug')
+            .sort({ createdAt: -1 })
+            .limit(10)
+            .lean();
+
+      await setCache(CACHE_KEYS.TRENDING, fallbackMovies, 300);
+      return res.json({ success: true, data: fallbackMovies, isFallback: true });
+    }
 
     await setCache(CACHE_KEYS.TRENDING, trending, 300);
     res.json({ success: true, data: trending });
@@ -127,13 +181,17 @@ export const getSearchSuggestions = async (req, res, next) => {
   try {
     const { q } = req.query;
 
-    if (!q || q.length < 1) {
+    if (!q || !q.trim()) {
       return res.json({ success: true, data: [] });
     }
 
+    const trimmed = q.trim();
+    const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+');
+    const regex = new RegExp(escaped, 'i');
+
     const movies = await Movie.find({
       isPublished: true,
-      title: { $regex: q, $options: 'i' }
+      title: regex
     })
       .select('_id title poster releaseYear averageRating')
       .limit(6)

@@ -20,9 +20,36 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
+const configuredOrigins = [
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map((u) => u.trim().replace(/\/+$/, '')) : []),
+  ...(process.env.ADDITIONAL_ALLOWED_ORIGINS ? process.env.ADDITIONAL_ALLOWED_ORIGINS.split(',').map((u) => u.trim().replace(/\/+$/, '')) : []),
+].filter(Boolean);
+
+const allowedOrigins = [
+  ...configuredOrigins,
+  'http://localhost:5173', // existing Vite dev server (keep this working)
+  'http://localhost:5174', // Vite alternate port when 5173 is occupied
+  'http://localhost:5175', // Vite fallback port
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'http://127.0.0.1:5175',
+  'http://localhost:3000', // Next.js default port
+  'http://localhost:3001', // Next.js alternate port used during this migration
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:3001',
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // allow requests with no origin (like Postman/curl) or from the whitelist
+      const normalizedOrigin = origin ? origin.replace(/\/+$/, '') : origin;
+      if (!origin || allowedOrigins.includes(normalizedOrigin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],

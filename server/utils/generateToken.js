@@ -22,6 +22,8 @@ export const generateRefreshToken = (userId) => {
   );
 };
 
+const isCrossSiteEnv = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'staging';
+
 /**
  * Helper to set the refresh token as a httpOnly cookie
  */
@@ -29,7 +31,7 @@ export const setRefreshCookie = (res, token) => {
   res.cookie('refreshToken', token, {
     httpOnly: true,
     secure: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: isCrossSiteEnv ? 'none' : 'lax',
     maxAge: 15 * 24 * 60 * 60 * 1000, // 15 days in ms
   });
 };
@@ -41,7 +43,7 @@ export const clearRefreshCookie = (res) => {
   res.cookie('refreshToken', '', {
     httpOnly: true,
     secure: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    sameSite: isCrossSiteEnv ? 'none' : 'lax',
     maxAge: 0,
   });
 };

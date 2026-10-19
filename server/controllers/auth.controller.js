@@ -134,7 +134,8 @@ export const forgotPassword = async (req, res, next) => {
     user.passwordResetExpires = Date.now() + 60 * 60 * 1000; // 1 hour
     await user.save({ validateBeforeSave: false });
 
-    const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+    const frontendBaseUrl = (process.env.CLIENT_URL || 'http://localhost:3000').split(',')[0].trim().replace(/\/+$/, '');
+    const resetUrl = `${frontendBaseUrl}/reset-password/${resetToken}`;
 
     addPasswordResetJob({ name: user.name, email, resetUrl }).catch(console.error);
 

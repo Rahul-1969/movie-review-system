@@ -10,10 +10,15 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const getFrontendBaseUrl = () => {
+  return (process.env.CLIENT_URL || 'http://localhost:3000').split(',')[0].trim().replace(/\/+$/, '');
+};
+
 /**
  * Send a welcome email to a new user
  */
 export const sendWelcomeEmail = async ({ name, email }) => {
+  const frontendUrl = getFrontendBaseUrl();
   await transporter.sendMail({
     from: `"Movie Review" <${process.env.SMTP_USER}>`,
     to: email,
@@ -23,7 +28,7 @@ export const sendWelcomeEmail = async ({ name, email }) => {
         <h1 style="color:#6366f1">Welcome, ${name}! 🎬</h1>
         <p>We're thrilled to have you on Movie Review — your go-to platform for honest film criticism.</p>
         <p>Start exploring movies, write reviews, and build your watchlist today!</p>
-        <a href="${process.env.CLIENT_URL}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">
+        <a href="${frontendUrl}" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">
           Browse Movies
         </a>
         <p style="margin-top:24px;color:#888;font-size:12px">Movie Review Team</p>
@@ -59,6 +64,7 @@ export const sendPasswordResetEmail = async ({ name, email, resetUrl }) => {
  * Notify a user about a new review on a movie they follow
  */
 export const sendReviewNotificationEmail = async ({ email, movieTitle, reviewerName }) => {
+  const frontendUrl = getFrontendBaseUrl();
   await transporter.sendMail({
     from: `"Movie Review" <${process.env.SMTP_USER}>`,
     to: email,
@@ -67,7 +73,7 @@ export const sendReviewNotificationEmail = async ({ email, movieTitle, reviewerN
       <div style="font-family:sans-serif;max-width:600px;margin:auto">
         <h2>New Review Alert</h2>
         <p><strong>${reviewerName}</strong> just posted a review on <strong>${movieTitle}</strong>.</p>
-        <a href="${process.env.CLIENT_URL}/movies" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">
+        <a href="${frontendUrl}/movies" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:bold">
           Read Review
         </a>
         <p style="margin-top:24px;color:#888;font-size:12px">Movie Review Team</p>

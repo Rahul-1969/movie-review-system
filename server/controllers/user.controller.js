@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import User from '../models/User.model.js';
 import Movie from '../models/Movie.model.js';
 import Review from '../models/Review.model.js';
@@ -46,13 +47,28 @@ export const toggleWatchlist = async (req, res, next) => {
   try {
     const { movieId } = req.params;
 
+    if (!mongoose.Types.ObjectId.isValid(movieId)) {
+      return res.status(400).json({ success: false, message: 'Invalid movie ID' });
+    }
+
     const movie = await Movie.findById(movieId);
     if (!movie) {
       return res.status(404).json({ success: false, message: 'Movie not found' });
     }
 
     const user = await User.findById(req.user._id);
-    const alreadyAdded = user.watchlist.some((id) => id.equals(movieId));
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!Array.isArray(user.watchlist)) {
+      user.watchlist = [];
+    }
+
+    const alreadyAdded = user.watchlist.some(
+      (id) => id && (typeof id.equals === 'function' ? id.equals(movieId) : id.toString() === movieId.toString())
+    );
+
     if (alreadyAdded) {
       user.watchlist.pull(movieId);
     } else {
@@ -82,7 +98,13 @@ export const getWatchlist = async (req, res, next) => {
       })
       .lean();
 
-    res.json({ success: true, data: user.watchlist });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const validWatchlist = (user.watchlist || []).filter(Boolean);
+
+    res.json({ success: true, data: validWatchlist });
   } catch (err) {
     next(err);
   }
