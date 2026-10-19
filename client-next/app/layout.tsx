@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import Providers from './providers';
+import Navbar from '../components/common/Navbar';
+import Footer from '../components/common/Footer';
 
 export const metadata: Metadata = {
   title: 'MovieReview',
@@ -14,9 +16,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="antialiased">
+      <body className="antialiased min-h-screen flex flex-col bg-dark-950 text-white">
         <Providers>
-          {children}
+          <Navbar />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
         </Providers>
       </body>
     </html>

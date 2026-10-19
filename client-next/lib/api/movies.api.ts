@@ -1,8 +1,8 @@
 import api from './client';
-import { Movie, ApiResponse, PaginatedResponse } from '../../types';
+import { Movie, ApiResponse, PaginatedResponse, MovieQueryParams } from '../../types';
 
 export const moviesApi = {
-  getAll: (params?: any) => api.get<PaginatedResponse<Movie>>('/movies', { params }),
+  getAll: (params?: MovieQueryParams) => api.get<PaginatedResponse<Movie>>('/movies', { params }),
   getById: (id: string) => api.get<ApiResponse<Movie>>(`/movies/${id}`),
   getTopRated: () => api.get<ApiResponse<Movie[]>>('/movies/top-rated'),
   getTrending: () => api.get<ApiResponse<Movie[]>>('/movies/trending'),

@@ -23,11 +23,15 @@ axiosInstance.interceptors.request.use(
 
 // Response interceptor — queue pattern (keep existing, just fix token source)
 let isRefreshing = false;
-let failedQueue: Array<{ resolve: (token: string | null) => void; reject: (error: any) => void }> = [];
+let failedQueue: Array<{ resolve: (token: string | null) => void; reject: (error: unknown) => void }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
-    error ? prom.reject(error) : prom.resolve(token);
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
   });
   failedQueue = [];
 };

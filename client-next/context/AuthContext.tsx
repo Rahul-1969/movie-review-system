@@ -1,24 +1,34 @@
 "use client";
 
-import React, { createContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useState, useEffect, useCallback, ReactNode, useContext } from 'react';
 import { authApi } from '../lib/api/auth.api';
 import { setAxiosToken } from '../lib/api/client';
-import { User } from '../types';
+import { User, LoginCredentials, RegisterData, AuthResponseData, ApiResponse } from '../types';
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   accessToken: string | null;
   loading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  login: (credentials: any) => Promise<any>;
-  register: (data: any) => Promise<any>;
+  login: (credentials: LoginCredentials) => Promise<ApiResponse<AuthResponseData>>;
+  register: (data: RegisterData) => Promise<ApiResponse<AuthResponseData>>;
   logout: () => Promise<void>;
   refreshToken: () => Promise<string | null>;
   updateUser: (updatedUser: User | null) => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
+
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+
+  return context;
+};
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     init();
   }, []);
 
-  const login = useCallback(async (credentials: any) => {
+  const login = useCallback(async (credentials: LoginCredentials) => {
     const res = await authApi.login(credentials);
     const { user: userData, accessToken: token } = res.data.data;
     setAccessToken(token);
@@ -52,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return res.data;
   }, []);
 
-  const register = useCallback(async (data: any) => {
+  const register = useCallback(async (data: RegisterData) => {
     const res = await authApi.register(data);
     const { user: userData, accessToken: token } = res.data.data;
     setAccessToken(token);
@@ -105,7 +115,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         updateUser,
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
